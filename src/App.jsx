@@ -15,6 +15,14 @@ import { events, testimonies, media, team } from "./data";
 
 const navItems = ["Home", "About", "Media", "Prayer", "Testimonies", "Events", "Give", "Connect", "Foundation"];
 
+const links = {
+  whatsapp: "https://chat.whatsapp.com/KInY0eOLgWM4lWyPuxW6pr",
+  zoom: "https://us04web.zoom.us/j/7841667945?pwd=71u-yBX9L8n94s_3ocE9sqSn5PnNqf.1",
+  instagram: "https://www.instagram.com/reel/CwViHO8pb7s/?igshid=MTc4MmM1YmI2Ng==",
+  tiktok: "https://www.tiktok.com/t/ZT8MtvG2p/",
+  youtube: "https://youtu.be/3pAcTlJ-u9M?si=555JKoSWI8FBNKOg",
+};
+
 const impactImages = [
   "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80",
   "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=900&q=80",
@@ -22,8 +30,10 @@ const impactImages = [
 ];
 
 function Button({ href, children, variant = "primary", className = "" }) {
+  const external = href?.startsWith("http");
+
   return (
-    <a href={href} className={`btn btn-${variant} ${className}`}>
+    <a href={href} className={`btn btn-${variant} ${className}`} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
       {children}
     </a>
   );
@@ -99,7 +109,7 @@ function ConnectionStrip() {
     <section className="h-auto bg-purplePrimary text-white md:h-[100px]">
       <div className="container-custom flex h-full flex-col items-center justify-between gap-4 py-6 text-center md:flex-row md:py-0 md:text-left">
         <p className="text-[20px] font-semibold leading-7">Connect with our live prayer community and walk with people who will stand with you.</p>
-        <Button href="https://wa.me/YOURNUMBER" variant="white" className="shrink-0">
+        <Button href={links.whatsapp} variant="white" className="shrink-0">
           <MessageCircle size={18} />
           Join WhatsApp
         </Button>
@@ -161,6 +171,12 @@ function Media() {
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           />
+        </div>
+        <div className="mt-8 flex justify-center">
+          <Button href={media[0].url} className="gap-2">
+            <PlayCircle size={18} />
+            Open YouTube Page
+          </Button>
         </div>
       </div>
     </section>
@@ -243,7 +259,8 @@ function EventCard({ event, large = false }) {
           {event.date}
         </div>
         <h3 className="mt-2 text-[20px] font-semibold leading-7">{event.title}</h3>
-        <a href="#connect" className="mt-3 inline-flex items-center gap-1 text-[14px] font-bold text-purplePrimary">
+        {event.password && <p className="mt-2 text-[14px] font-semibold text-black/60">Password: {event.password}</p>}
+        <a href={event.link || "#connect"} target={event.link ? "_blank" : undefined} rel={event.link ? "noreferrer" : undefined} className="mt-3 inline-flex items-center gap-1 text-[14px] font-bold text-purplePrimary">
           View <ChevronRight size={16} />
         </a>
       </div>
@@ -318,14 +335,14 @@ function Connect() {
             <MessageCircle className="h-10 w-10 text-purplePrimary" />
             <h3 className="mt-4 text-[28px] font-semibold leading-9">Join our WhatsApp community</h3>
             <p className="mt-3 text-[18px] leading-8 text-black/65">Prayer reminders, daily meetings, announcements, and community support.</p>
-            <Button href="https://wa.me/YOURNUMBER" className="mt-6">
+            <Button href={links.whatsapp} className="mt-6">
               Join WhatsApp
             </Button>
             <div className="mt-8 flex flex-wrap gap-4 text-[14px] font-semibold">
-              <a href="#" className="text-purplePrimary">Instagram</a>
-              <a href="#" className="text-purplePrimary">Facebook</a>
-              <a href="#" className="text-purplePrimary">YouTube</a>
-              <a href="#" className="text-purplePrimary">TikTok</a>
+              <a href={links.instagram} target="_blank" rel="noreferrer" className="text-purplePrimary">Instagram</a>
+              <a href={links.youtube} target="_blank" rel="noreferrer" className="text-purplePrimary">YouTube</a>
+              <a href={links.tiktok} target="_blank" rel="noreferrer" className="text-purplePrimary">TikTok</a>
+              <a href={links.zoom} target="_blank" rel="noreferrer" className="text-purplePrimary">Zoom</a>
             </div>
           </div>
 
@@ -426,9 +443,10 @@ function Footer() {
         <div>
           <p className="font-bold">Social</p>
           <div className="mt-4 grid gap-2 text-[14px] text-white/60">
-            <a href="#">Instagram</a>
-            <a href="#">YouTube</a>
-            <a href="#">Facebook</a>
+            <a href={links.instagram} target="_blank" rel="noreferrer">Instagram</a>
+            <a href={links.youtube} target="_blank" rel="noreferrer">YouTube</a>
+            <a href={links.tiktok} target="_blank" rel="noreferrer">TikTok</a>
+            <a href={links.whatsapp} target="_blank" rel="noreferrer">WhatsApp</a>
           </div>
         </div>
         <div>
