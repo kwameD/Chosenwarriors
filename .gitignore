@@ -4,3 +4,12 @@ dist
 .env
 .env.local
 npm-debug.log*
+
+# Terraform local state and generated working files
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/tfplan
+**/*.tfplan
+crash.log
+crash.*.log
