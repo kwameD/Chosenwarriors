@@ -31,9 +31,12 @@ npm run dev
 npm run build
 npm run preview
 npm test
+npm run test:all
 npm run test:unit
 npm run test:integration
 npm run test:regression
+npm run test:e2e
+npm run test:e2e:headed
 ```
 
 ## Testing
@@ -43,14 +46,20 @@ The test suite is organized by purpose:
 - Unit tests cover reusable UI components.
 - Integration tests cover interactive component behavior.
 - Regression tests cover the main page structure and key calls to action.
+- End-to-end tests run in Chromium through Playwright and cover website flow, responsive navigation, forms, layout overflow, and lazy media loading.
 
 Run everything with:
 
 ```bash
-npm test
+npm run test:all
+```
+
+Before the first local E2E run, install Chromium:
+
+```bash
+npx playwright install chromium
 ```
 
 ## Deployment
 
 The repository includes an AWS Amplify build specification in `amplify.yml`. The production build outputs to `dist/`.
-

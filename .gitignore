@@ -5,6 +5,8 @@ chosen-warriors/
 .env
 .env.local
 npm-debug.log*
+playwright-report/
+test-results/
 
 # Terraform local state and generated working files
 **/.terraform/
