@@ -1,6 +1,7 @@
 import { PlayCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { SectionHeader } from "../components/ui/SectionHeader";
+import { YouTubeEmbed } from "../components/ui/YouTubeEmbed";
 import { featuredMessages } from "../content/siteContent";
 
 const primaryMessage = featuredMessages[0];
@@ -15,13 +16,7 @@ export function Media() {
           subtitle="A featured message for prayer, surrender, and spiritual momentum."
         />
         <div className="relative h-[320px] overflow-hidden rounded-2xl bg-darkText shadow-soft md:h-[600px]">
-          <iframe
-            className="h-full w-full"
-            src={`https://www.youtube.com/embed/${primaryMessage.youtubeId}`}
-            title={primaryMessage.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
+          <YouTubeEmbed title={primaryMessage.title} videoId={primaryMessage.youtubeId} />
         </div>
         <div className="mt-8 flex justify-center">
           <Button href={primaryMessage.url} className="gap-2">

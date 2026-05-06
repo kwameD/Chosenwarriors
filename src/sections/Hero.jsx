@@ -1,8 +1,19 @@
 import { Button } from "../components/ui/Button";
+import { OptimizedImage } from "../components/ui/OptimizedImage";
+import { siteImages } from "../content/siteContent";
 
 export function Hero() {
   return (
-    <section id="home" className="relative h-[720px] overflow-hidden bg-[url('https://images.unsplash.com/photo-1507692049790-de58290a4334?auto=format&fit=crop&w=1800&q=80')] bg-cover bg-center">
+    <section id="home" className="relative h-[720px] overflow-hidden bg-darkText">
+      <OptimizedImage
+        src={siteImages.hero}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+        fetchPriority="high"
+        height="720"
+        loading="eager"
+        width="1800"
+      />
       <div className="absolute inset-0 bg-black/40" />
       <div className="container-custom relative z-10 pt-[160px]">
         <div className="max-w-[600px] text-white">
@@ -22,4 +33,3 @@ export function Hero() {
     </section>
   );
 }
-

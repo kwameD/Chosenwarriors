@@ -1,12 +1,14 @@
 import { HandHeart, PlayCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
+import { OptimizedImage } from "../components/ui/OptimizedImage";
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { impactImages } from "../content/siteContent";
+import { impactImages, siteImages } from "../content/siteContent";
 
 export function Foundation() {
   return (
     <section id="foundation" className="bg-white fade-section">
-      <div className="relative flex min-h-[560px] items-center overflow-hidden bg-[url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1800&q=80')] bg-cover bg-center">
+      <div className="relative flex min-h-[560px] items-center overflow-hidden bg-darkText">
+        <OptimizedImage src={siteImages.foundationHero} alt="" className="absolute inset-0 h-full w-full object-cover" width="1800" height="560" />
         <div className="absolute inset-0 bg-black/50" />
         <div className="container-custom relative z-10 text-white">
           <div className="max-w-[620px]">
@@ -29,7 +31,7 @@ export function Foundation() {
         />
         <div className="grid gap-8 md:grid-cols-3">
           {impactImages.map((image, index) => (
-            <img key={image} src={image} alt={`Chosen to Rescue impact ${index + 1}`} className="h-[260px] w-full rounded-xl object-cover shadow-soft" />
+            <OptimizedImage key={image} src={image} alt={`Chosen to Rescue impact ${index + 1}`} className="h-[260px] w-full rounded-xl object-cover shadow-soft" width="400" height="260" />
           ))}
         </div>
         <div className="mt-16 grid items-center gap-10 lg:grid-cols-2">

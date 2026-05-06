@@ -41,6 +41,12 @@ export const impactImages = [
   "https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=900&q=80",
 ];
 
+export const siteImages = {
+  foundationHero: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1800&q=80",
+  giving: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?auto=format&fit=crop&w=1100&q=80",
+  hero: "https://images.unsplash.com/photo-1507692049790-de58290a4334?auto=format&fit=crop&w=1600&q=75",
+};
+
 export const testimonyStories = [
   {
     name: "Community Member",

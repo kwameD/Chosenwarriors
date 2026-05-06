@@ -30,10 +30,10 @@ export function Connect() {
             </div>
           </div>
 
-          <form className="card grid gap-4">
-            <input className="form-field" placeholder="Name" />
-            <input className="form-field" placeholder="Email" type="email" />
-            <textarea className="form-field h-[160px] resize-none py-4" placeholder="Message" />
+          <form className="card grid gap-4" aria-label="Contact form">
+            <input className="form-field" placeholder="Name" aria-label="Name" autoComplete="name" />
+            <input className="form-field" placeholder="Email" aria-label="Email" autoComplete="email" type="email" />
+            <textarea className="form-field h-[160px] resize-none py-4" placeholder="Message" aria-label="Message" />
             <button className="btn btn-primary" type="submit">
               Send Message
             </button>

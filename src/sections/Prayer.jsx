@@ -11,10 +11,10 @@ export function Prayer() {
           title="We will stand in prayer with you."
           subtitle="Share your request with care and clarity. This form is ready for a future backend."
         />
-        <form className="form-card mx-auto w-full max-w-[600px]">
-          <input className="form-field" placeholder="Name (optional)" />
-          <input className="form-field" placeholder="Email (optional)" type="email" />
-          <textarea className="form-field h-[160px] resize-none py-4" placeholder="Prayer request" />
+        <form className="form-card mx-auto w-full max-w-[600px]" aria-label="Prayer request form">
+          <input className="form-field" placeholder="Name (optional)" aria-label="Name" autoComplete="name" />
+          <input className="form-field" placeholder="Email (optional)" aria-label="Email" autoComplete="email" type="email" />
+          <textarea className="form-field h-[160px] resize-none py-4" placeholder="Prayer request" aria-label="Prayer request" />
           <label className="flex items-center gap-3 text-[14px] text-black/65">
             <input type="checkbox" className="h-4 w-4 rounded border-black/20 text-purplePrimary" />
             Keep this request confidential

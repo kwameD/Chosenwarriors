@@ -34,8 +34,11 @@ const orderedPageSections = [
 export default function App() {
   return (
     <>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <Navbar />
-      <main>
+      <main id="main-content">
         {orderedPageSections.map((Section) => (
           <Section key={Section.name} />
         ))}
