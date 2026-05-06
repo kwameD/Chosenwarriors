@@ -19,16 +19,16 @@ import {
 const orderedPageSections = [
   Hero,
   ConnectionStrip,
+  About,
   Media,
-  Testimonies,
+  Prayer,
   PrayerCta,
+  Testimonies,
   Events,
   Give,
-  Newsletter,
-  About,
-  Prayer,
   Connect,
   Foundation,
+  Newsletter,
 ];
 
 export default function App() {

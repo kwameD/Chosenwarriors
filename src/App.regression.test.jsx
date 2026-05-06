@@ -7,16 +7,16 @@ describe("App regression", () => {
     const expectedSectionMarkers = [
       "home",
       "Connect with our live prayer community and walk with people who will stand with you.",
+      "about",
       "media",
-      "testimonies",
+      "prayer",
       "Need prayer today?",
+      "testimonies",
       "events",
       "give",
-      "Stay connected to what God is doing",
-      "about",
-      "prayer",
       "connect",
       "foundation",
+      "Stay connected to what God is doing",
     ];
 
     render(<App />);
@@ -36,4 +36,3 @@ describe("App regression", () => {
     expect(screen.getByRole("link", { name: /give to the foundation/i })).toHaveAttribute("href", "#give");
   });
 });
-
