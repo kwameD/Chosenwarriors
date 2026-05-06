@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { navigationItems } from "../../config/siteConfig";
+import { ministryName, navigationItems } from "../../config/siteConfig";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,17 +10,11 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 h-20 border-b border-black/5 bg-white/95 backdrop-blur">
       <nav className="container-custom flex h-20 items-center justify-between" aria-label="Primary navigation">
-        <a href="#home" className="logo-mark" aria-label="Chosen Warriors home">
-          Chosen Warriors
+        <a href="#home" className="logo-mark" aria-label={`${ministryName} home`}>
+          {ministryName}
         </a>
 
-        <div className="hidden items-center gap-8 text-[16px] font-medium lg:flex">
-          {navigationItems.map((item) => (
-            <a key={item.href} href={item.href} className="transition hover:text-purplePrimary">
-              {item.label}
-            </a>
-          ))}
-        </div>
+        <NavigationLinks className="hidden items-center gap-8 text-[16px] font-medium lg:flex" />
 
         <a href="#connect" className="hidden h-11 items-center rounded-lg bg-purplePrimary px-5 text-sm font-semibold text-white transition hover:bg-purpleHover md:inline-flex">
           Join Us
@@ -38,15 +32,21 @@ export function Navbar() {
 
       {isMenuOpen && (
         <nav className="border-t border-black/5 bg-white px-5 pb-6 pt-3 shadow-soft lg:hidden" aria-label="Mobile navigation">
-          <div className="grid gap-1">
-            {navigationItems.map((item) => (
-              <a key={item.href} href={item.href} onClick={closeMenu} className="rounded-lg px-3 py-3 font-medium hover:bg-softBg">
-                {item.label}
-              </a>
-            ))}
-          </div>
+          <NavigationLinks className="grid gap-1" linkClassName="rounded-lg px-3 py-3 font-medium hover:bg-softBg" onNavigate={closeMenu} />
         </nav>
       )}
     </header>
+  );
+}
+
+function NavigationLinks({ className, linkClassName = "transition hover:text-purplePrimary", onNavigate }) {
+  return (
+    <div className={className}>
+      {navigationItems.map((item) => (
+        <a key={item.href} href={item.href} onClick={onNavigate} className={linkClassName}>
+          {item.label}
+        </a>
+      ))}
+    </div>
   );
 }

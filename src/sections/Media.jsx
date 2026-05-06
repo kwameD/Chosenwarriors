@@ -1,9 +1,9 @@
 import { PlayCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { media } from "../content/siteContent";
+import { featuredMessages } from "../content/siteContent";
 
-const featuredMedia = media[0];
+const primaryMessage = featuredMessages[0];
 
 export function Media() {
   return (
@@ -17,14 +17,14 @@ export function Media() {
         <div className="relative h-[320px] overflow-hidden rounded-2xl bg-darkText shadow-soft md:h-[600px]">
           <iframe
             className="h-full w-full"
-            src={`https://www.youtube.com/embed/${featuredMedia.youtubeId}`}
-            title={featuredMedia.title}
+            src={`https://www.youtube.com/embed/${primaryMessage.youtubeId}`}
+            title={primaryMessage.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           />
         </div>
         <div className="mt-8 flex justify-center">
-          <Button href={featuredMedia.url} className="gap-2">
+          <Button href={primaryMessage.url} className="gap-2">
             <PlayCircle size={18} />
             Open YouTube Page
           </Button>

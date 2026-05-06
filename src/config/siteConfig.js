@@ -1,3 +1,6 @@
+export const ministryName = "Chosen Warriors";
+
+// Navigation and contact values used across layout sections.
 export const navigationItems = [
   { label: "Home", href: "#home" },
   { label: "About", href: "#about" },
@@ -18,5 +21,24 @@ export const socialLinks = {
   youtube: "https://youtu.be/3pAcTlJ-u9M?si=555JKoSWI8FBNKOg",
 };
 
-export const contactEmail = "chosenwarriors@example.com";
+export const connectSocialLinks = [
+  { label: "Instagram", href: socialLinks.instagram },
+  { label: "YouTube", href: socialLinks.youtube },
+  { label: "TikTok", href: socialLinks.tiktok },
+  { label: "Zoom", href: socialLinks.zoom },
+];
 
+export const footerNavigationLinks = [
+  { label: "About", href: "#about" },
+  { label: "Media", href: "#media" },
+  { label: "Events", href: "#events" },
+];
+
+export const footerSocialLinks = [
+  { label: "Instagram", href: socialLinks.instagram },
+  { label: "YouTube", href: socialLinks.youtube },
+  { label: "TikTok", href: socialLinks.tiktok },
+  { label: "WhatsApp", href: socialLinks.whatsapp },
+];
+
+export const contactEmail = "chosenwarriors@example.com";

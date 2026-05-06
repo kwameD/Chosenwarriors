@@ -1,4 +1,5 @@
-export const events = [
+// Centralized display content keeps the sections focused on layout.
+export const ministryEvents = [
   {
     title: "Daily Prayer Meeting",
     date: "Monday - Friday",
@@ -7,7 +8,7 @@ export const events = [
     description: "Join us for daily prayer as we seek God together.",
     image: "https://images.unsplash.com/photo-1507692049790-de58290a4334?auto=format&fit=crop&w=900&q=80",
     link: "https://us04web.zoom.us/j/7841667945?pwd=71u-yBX9L8n94s_3ocE9sqSn5PnNqf.1",
-    password: "CW"
+    password: "CW",
   },
   {
     title: "Revival Night",
@@ -16,7 +17,7 @@ export const events = [
     location: "Online / In Person",
     description: "A night of worship, prayer, teaching, and spiritual activation.",
     image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=900&q=80",
-    link: "https://chat.whatsapp.com/KInY0eOLgWM4lWyPuxW6pr"
+    link: "https://chat.whatsapp.com/KInY0eOLgWM4lWyPuxW6pr",
   },
   {
     title: "Chosen to Rescue Outreach",
@@ -25,8 +26,8 @@ export const events = [
     location: "Community Outreach",
     description: "Serving children in need through giving, outreach, and evangelism.",
     image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80",
-    link: "https://chat.whatsapp.com/KInY0eOLgWM4lWyPuxW6pr"
-  }
+    link: "https://chat.whatsapp.com/KInY0eOLgWM4lWyPuxW6pr",
+  },
 ];
 
 export const givingMethods = [
@@ -40,7 +41,7 @@ export const impactImages = [
   "https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=900&q=80",
 ];
 
-export const testimonies = [
+export const testimonyStories = [
   {
     name: "Community Member",
     text: "Through prayer and the Word, I found renewed faith, strength, and direction.",
@@ -52,28 +53,28 @@ export const testimonies = [
   {
     name: "Volunteer",
     text: "Serving through Chosen Warriors has shown me how powerful love in action can be.",
-  }
+  },
 ];
 
-export const media = [
+export const featuredMessages = [
   {
     title: "Chosen Warriors YouTube Message",
     youtubeId: "3pAcTlJ-u9M",
-    url: "https://youtu.be/3pAcTlJ-u9M?si=555JKoSWI8FBNKOg"
-  }
+    url: "https://youtu.be/3pAcTlJ-u9M?si=555JKoSWI8FBNKOg",
+  },
 ];
 
-export const team = [
+export const leadershipProfiles = [
   {
     name: "Leadership Team",
     role: "Chosen Warriors",
     bio: "Raising revivalists for homes, communities, and nations through prayer, the Word, and fasting.",
-    image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80"
+    image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80",
   },
   {
     name: "Davina Bonsu",
     role: "Founder, Chosen to Rescue",
     bio: "Leading the foundation’s mission to support children in need through outreach, giving, and evangelism.",
-    image: "/founder-davina-bonsu.jpg"
-  }
+    image: "/founder-davina-bonsu.jpg",
+  },
 ];

@@ -1,6 +1,7 @@
 import { Calendar, ChevronRight } from "lucide-react";
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { events } from "../content/siteContent";
+import { ministryEvents } from "../content/siteContent";
+import { getExternalLinkProps } from "../utils/links";
 
 export function Events() {
   return (
@@ -8,7 +9,7 @@ export function Events() {
       <div className="container-custom">
         <SectionHeader eyebrow="Engagement" title="Upcoming Events" subtitle="Join us live, online, and in the community." />
         <div className="grid justify-items-center gap-8 md:grid-cols-3">
-          {events.map((event) => (
+          {ministryEvents.map((event) => (
             <EventCard key={event.title} event={event} />
           ))}
         </div>
@@ -28,7 +29,7 @@ function EventCard({ event }) {
         </div>
         <h3 className="mt-2 text-[20px] font-semibold leading-7">{event.title}</h3>
         {event.password && <p className="mt-2 text-[14px] font-semibold text-black/60">Password: {event.password}</p>}
-        <a href={event.link || "#connect"} target={event.link ? "_blank" : undefined} rel={event.link ? "noreferrer" : undefined} className="mt-3 inline-flex items-center gap-1 text-[14px] font-bold text-purplePrimary">
+        <a href={event.link || "#connect"} {...getExternalLinkProps(event.link)} className="mt-3 inline-flex items-center gap-1 text-[14px] font-bold text-purplePrimary">
           View <ChevronRight size={16} />
         </a>
       </div>

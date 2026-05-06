@@ -1,5 +1,5 @@
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { team } from "../content/siteContent";
+import { leadershipProfiles } from "../content/siteContent";
 
 export function About() {
   return (
@@ -11,7 +11,7 @@ export function About() {
           subtitle="Chosen Warriors equips believers to boldly proclaim Jesus and carry His power for transformation, healing, and salvation."
         />
         <div className="grid gap-8 md:grid-cols-2">
-          {team.map((member) => (
+          {leadershipProfiles.map((member) => (
             <article key={member.name} className="card card-hover flex flex-col gap-6 sm:flex-row">
               <img src={member.image} alt={member.name} className="h-48 rounded-xl object-cover sm:h-40 sm:w-40" />
               <div>

@@ -1,6 +1,6 @@
 import { Quote } from "lucide-react";
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { testimonies } from "../content/siteContent";
+import { testimonyStories } from "../content/siteContent";
 
 export function Testimonies() {
   return (
@@ -12,7 +12,7 @@ export function Testimonies() {
           subtitle="Real testimonies from people impacted through prayer, community, and service."
         />
         <div className="grid justify-items-center gap-6 md:grid-cols-3">
-          {testimonies.map((testimony) => (
+          {testimonyStories.map((testimony) => (
             <article key={testimony.name} className="card card-hover min-h-[220px] w-full md:max-w-[360px]">
               <Quote className="text-purplePrimary" size={30} />
               <p className="mt-5 text-[16px] leading-7 text-black/70">{testimony.text}</p>

@@ -1,14 +1,8 @@
 import { MessageCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { socialLinks } from "../config/siteConfig";
-
-const visibleSocialLinks = [
-  { label: "Instagram", href: socialLinks.instagram },
-  { label: "YouTube", href: socialLinks.youtube },
-  { label: "TikTok", href: socialLinks.tiktok },
-  { label: "Zoom", href: socialLinks.zoom },
-];
+import { connectSocialLinks, socialLinks } from "../config/siteConfig";
+import { getExternalLinkProps } from "../utils/links";
 
 export function Connect() {
   return (
@@ -28,8 +22,8 @@ export function Connect() {
               Join WhatsApp
             </Button>
             <div className="mt-8 flex flex-wrap gap-4 text-[14px] font-semibold">
-              {visibleSocialLinks.map((link) => (
-                <a key={link.label} href={link.href} target="_blank" rel="noreferrer" className="text-purplePrimary">
+              {connectSocialLinks.map((link) => (
+                <a key={link.label} href={link.href} {...getExternalLinkProps(link.href)} className="text-purplePrimary">
                   {link.label}
                 </a>
               ))}

@@ -15,7 +15,8 @@ import {
   Testimonies,
 } from "./sections";
 
-const pageSections = [
+// This order is the homepage flow; regression tests protect it from accidental rearranges.
+const orderedPageSections = [
   Hero,
   ConnectionStrip,
   Media,
@@ -35,7 +36,7 @@ export default function App() {
     <>
       <Navbar />
       <main>
-        {pageSections.map((Section) => (
+        {orderedPageSections.map((Section) => (
           <Section key={Section.name} />
         ))}
       </main>
