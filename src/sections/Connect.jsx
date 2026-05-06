@@ -1,7 +1,7 @@
 import { MessageCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { socialLinks } from "../config/site";
+import { socialLinks } from "../config/siteConfig";
 
 const visibleSocialLinks = [
   { label: "Instagram", href: socialLinks.instagram },
@@ -49,4 +49,3 @@ export function Connect() {
     </section>
   );
 }
-

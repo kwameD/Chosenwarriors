@@ -1,4 +1,4 @@
-import { contactEmail, socialLinks } from "../../config/site";
+import { contactEmail, socialLinks } from "../../config/siteConfig";
 
 const footerLinks = [
   { label: "About", href: "#about" },

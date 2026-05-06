@@ -1,6 +1,6 @@
 import { MessageCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
-import { socialLinks } from "../config/site";
+import { socialLinks } from "../config/siteConfig";
 
 export function ConnectionStrip() {
   return (
@@ -15,4 +15,3 @@ export function ConnectionStrip() {
     </section>
   );
 }
-

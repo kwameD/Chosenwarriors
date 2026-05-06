@@ -1,6 +1,6 @@
 import { Quote } from "lucide-react";
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { testimonies } from "../data";
+import { testimonies } from "../content/siteContent";
 
 export function Testimonies() {
   return (
@@ -24,4 +24,3 @@ export function Testimonies() {
     </section>
   );
 }
-

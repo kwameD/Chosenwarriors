@@ -1,9 +1,5 @@
 import { Button } from "../components/ui/Button";
-
-const givingMethods = [
-  { label: "Zelle", value: "your-email@example.com" },
-  { label: "Cash App", value: "$ChosenWarriors" },
-];
+import { givingMethods } from "../content/siteContent";
 
 export function Give() {
   return (
@@ -36,4 +32,3 @@ export function Give() {
     </section>
   );
 }
-

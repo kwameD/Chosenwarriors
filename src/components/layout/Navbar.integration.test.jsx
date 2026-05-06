@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { navigationItems } from "../../config/site";
+import { navigationItems } from "../../config/siteConfig";
 import { Navbar } from "./Navbar";
 
 describe("Navbar integration", () => {

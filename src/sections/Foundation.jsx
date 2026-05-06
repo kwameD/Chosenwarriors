@@ -1,12 +1,7 @@
 import { HandHeart, PlayCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { SectionHeader } from "../components/ui/SectionHeader";
-
-const impactImages = [
-  "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=900&q=80",
-];
+import { impactImages } from "../content/siteContent";
 
 export function Foundation() {
   return (
@@ -56,4 +51,3 @@ export function Foundation() {
     </section>
   );
 }
-

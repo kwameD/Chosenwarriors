@@ -1,7 +1,7 @@
 import { PlayCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { media } from "../data";
+import { media } from "../content/siteContent";
 
 const featuredMedia = media[0];
 
@@ -33,4 +33,3 @@ export function Media() {
     </section>
   );
 }
-

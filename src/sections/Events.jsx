@@ -1,6 +1,6 @@
 import { Calendar, ChevronRight } from "lucide-react";
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { events } from "../data";
+import { events } from "../content/siteContent";
 
 export function Events() {
   return (
@@ -35,4 +35,3 @@ function EventCard({ event }) {
     </article>
   );
 }
-

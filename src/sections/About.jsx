@@ -1,5 +1,5 @@
 import { SectionHeader } from "../components/ui/SectionHeader";
-import { team } from "../data";
+import { team } from "../content/siteContent";
 
 export function About() {
   return (
@@ -26,4 +26,3 @@ export function About() {
     </section>
   );
 }
-
