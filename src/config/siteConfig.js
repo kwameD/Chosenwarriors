@@ -41,4 +41,4 @@ export const footerSocialLinks = [
   { label: "WhatsApp", href: socialLinks.whatsapp },
 ];
 
-export const contactEmail = "chosenwarriors@example.com";
+export const contactEmail = "chosenwarriorsofficial@gmail.com";
