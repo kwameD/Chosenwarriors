@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => window.localStorage.clear());
+});
+
 const primarySections = [
   "home",
   "ministry-overview",
@@ -89,6 +94,65 @@ test.describe("forms and media", () => {
     await expect(newsletterForm.getByLabel("Email address")).toHaveValue("news@example.com");
     await newsletterForm.getByRole("button", { name: "Subscribe" }).click();
     await expect(page.getByRole("status")).toContainText("signed up");
+  });
+
+  test("supports Sprint 3 giving, member, event, and admin workflows", async ({ page }) => {
+    await page.goto("/#give-online");
+    const givingForm = page.getByRole("form", { name: "Online giving form" });
+    await givingForm.getByLabel("Donation purpose").selectOption("Outreach");
+    await givingForm.getByLabel("Giving frequency").selectOption("Monthly recurring");
+    await givingForm.getByLabel("Donor name").fill("Generous Visitor");
+    await givingForm.getByLabel("Email for receipt").fill("giver@example.com");
+    await givingForm.getByRole("button", { name: /create secure checkout/i }).click();
+    await expect(page.getByRole("status")).toContainText("Donation intent saved");
+
+    await page.goto("/#member-portal");
+    const signupForm = page.getByRole("form", { name: "Member signup form" });
+    await signupForm.getByLabel("Full name").fill("Portal Member");
+    await signupForm.getByLabel("Signup email").fill("member@example.com");
+    await signupForm.getByLabel("Phone number").fill("555-0100");
+    await signupForm.getByLabel("Location").fill("New York");
+    await signupForm.getByRole("button", { name: "Create Profile" }).click();
+    await expect(page.getByRole("heading", { name: "Portal Member" })).toBeVisible();
+
+    await page.goto("/#event-daily-prayer-meeting");
+    const eventForm = page.getByRole("form", { name: "Daily Prayer Meeting registration form" });
+    await expect(eventForm.getByLabel("Full name")).toHaveValue("Portal Member");
+    await eventForm.getByRole("button", { name: "Register for Event" }).click();
+    await expect(page.getByRole("status")).toContainText("Registration confirmed");
+
+    await page.goto("/#admin");
+    await page.getByRole("button", { name: "Preview Admin Dashboard" }).click();
+    await expect(page.getByRole("heading", { name: "CRM Lite Contacts" })).toBeVisible();
+    await expect(page.getByText("Member • member@example.com")).toBeVisible();
+  });
+
+  test("lets admins upload pictures and load YouTube videos", async ({ page }) => {
+    await page.goto("/#admin");
+    await page.getByRole("button", { name: "Preview Admin Dashboard" }).click();
+
+    const imageForm = page.getByRole("form", { name: "Admin media image form" });
+    await imageForm.getByLabel("Picture file").setInputFiles("public/chosen-warriors-logo.jpg");
+    await imageForm.getByLabel("Image description").fill("Admin test gallery image");
+    await imageForm.getByLabel("Image category").fill("Admin Upload");
+    await imageForm.getByRole("button", { name: "Save Picture" }).click();
+    await expect(page.getByRole("status")).toContainText("Gallery image uploaded");
+    await expect(page.getByRole("heading", { name: "Uploaded Pictures" }).locator("xpath=ancestor::article").getByText("Admin test gallery image").first()).toBeVisible();
+
+    const videoForm = page.getByRole("form", { name: "Admin YouTube video form" });
+    await videoForm.getByLabel("Video title").fill("Admin Test Message");
+    await videoForm.getByLabel("YouTube URL or video ID").fill("https://youtu.be/3pAcTlJ-u9M");
+    await videoForm.getByLabel("Video category").fill("Teaching");
+    await videoForm.getByLabel("Video description").fill("A message loaded from the admin dashboard.");
+    await videoForm.getByRole("button", { name: "Load Video" }).click();
+    await expect(page.getByRole("status")).toContainText("YouTube video loaded");
+    await expect(page.getByRole("heading", { name: "Loaded Videos" }).locator("xpath=ancestor::article").getByText("Admin Test Message").first()).toBeVisible();
+
+    await page.goto("/#media-gallery");
+    await expect(page.getByRole("button", { name: /admin upload/i }).first()).toBeVisible();
+
+    await page.goto("/#media");
+    await expect(page.getByRole("heading", { name: "Admin Test Message" }).first()).toBeVisible();
   });
 
   test("defers the YouTube iframe until the user chooses to play", async ({ page }) => {

@@ -27,7 +27,7 @@ export function Hero() {
             <Button href="#media" variant="secondary">
               Watch Sermons
             </Button>
-            <Button href="#give" variant="secondary">
+            <Button href="#give-online" variant="secondary">
               Give Online
             </Button>
           </div>

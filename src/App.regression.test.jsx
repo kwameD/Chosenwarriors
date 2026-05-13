@@ -28,6 +28,6 @@ describe("App regression", () => {
 
     expect(screen.getAllByRole("link", { name: /join us/i })[0]).toHaveAttribute("href", "#contact");
     expect(screen.getByRole("link", { name: /watch sermons/i })).toHaveAttribute("href", "#media");
-    expect(screen.getAllByRole("link", { name: /give online/i })[0]).toHaveAttribute("href", "#give");
+    expect(screen.getAllByRole("link", { name: /give online/i })[0]).toHaveAttribute("href", "#give-online");
   });
 });

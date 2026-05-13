@@ -7,6 +7,8 @@ Chosen Warriors is a Vite and React ministry website for prayer, media, events, 
 - React
 - Vite
 - Tailwind CSS
+- Express
+- Nodemailer
 - Lucide React
 - Vitest
 - React Testing Library
@@ -22,7 +24,22 @@ src/
   content/        Ministry content displayed by sections
   sections/       Page sections composed by App.jsx
   test/           Test setup files
+server/           Express backend for email delivery and production hosting
 ```
+
+## Email Setup
+
+Contact messages and prayer requests post to the backend and send email to `chosenwarriorsofficial@gmail.com` through SMTP. Copy `.env.example` to `.env` and add the ministry email credentials:
+
+```bash
+cp .env.example .env
+```
+
+For Gmail, use an app password for `SMTP_PASS`. Without SMTP variables, the backend runs in dry-run mode for local testing.
+
+## Database
+
+The backend uses SQLite through Node's built-in `node:sqlite` module. By default, records are stored at `data/chosen-warriors.sqlite`, which is ignored by Git. The database stores contact messages, prayer requests, admin-uploaded gallery images, and admin-loaded YouTube videos.
 
 ## Scripts
 

@@ -4,6 +4,7 @@ import { logoImage, ministryName, navigationItems } from "../../config/siteConfi
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hasAcceptedCookies, setHasAcceptedCookies] = useState(() => document.cookie.includes("cw_cookie_consent=accepted"));
   const [activeHash, setActiveHash] = useState(() => window.location.hash || "#home");
 
   useEffect(() => {
@@ -14,9 +15,13 @@ export function Navbar() {
   }, []);
 
   const closeMenu = () => setIsMenuOpen(false);
+  const acceptCookies = () => {
+    document.cookie = "cw_cookie_consent=accepted; max-age=31536000; path=/; SameSite=Lax";
+    setHasAcceptedCookies(true);
+  };
 
   return (
-    <header className="sticky top-0 z-50 h-20 border-b border-black/5 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-black/5 bg-white/95 backdrop-blur">
       <nav className="container-custom flex h-20 items-center justify-between" aria-label="Primary navigation">
         <a href="#home" className="logo-mark" aria-label={`${ministryName} home`}>
           <img src={logoImage} alt="" className="h-12 w-auto" />
@@ -42,6 +47,17 @@ export function Navbar() {
         <nav className="border-t border-black/5 bg-white px-5 pb-6 pt-3 shadow-soft lg:hidden" aria-label="Mobile navigation">
           <NavigationLinks activeHash={activeHash} className="grid gap-1" linkClassName="rounded-lg px-3 py-3 font-medium hover:bg-softBg" onNavigate={closeMenu} />
         </nav>
+      )}
+
+      {!hasAcceptedCookies && (
+        <div className="border-t border-black/10 bg-black text-white">
+          <div className="container-custom flex flex-col gap-3 py-3 text-[13px] leading-6 sm:flex-row sm:items-center sm:justify-between">
+            <p>We use cookies to remember site preferences and improve the Chosen Warriors experience.</p>
+            <button type="button" className="h-9 rounded-lg bg-white px-4 text-sm font-bold text-black transition hover:bg-white/85" onClick={acceptCookies}>
+              Accept
+            </button>
+          </div>
+        </div>
       )}
     </header>
   );

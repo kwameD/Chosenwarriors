@@ -39,4 +39,17 @@ describe("Navbar integration", () => {
     expect(screen.getAllByRole("link", { name: "Leadership" })[0]).toHaveAttribute("href", "#leadership");
     expect(screen.getAllByRole("link", { name: "Testimonials" })[0]).toHaveAttribute("href", "#testimonials");
   });
+
+  it("lets visitors accept the cookie notice", async () => {
+    const user = userEvent.setup();
+    document.cookie = "cw_cookie_consent=; max-age=0; path=/";
+
+    render(<Navbar />);
+
+    expect(screen.getByText(/we use cookies/i)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Accept" }));
+
+    expect(screen.queryByText(/we use cookies/i)).not.toBeInTheDocument();
+    expect(document.cookie).toContain("cw_cookie_consent=accepted");
+  });
 });

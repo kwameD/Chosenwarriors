@@ -2,14 +2,37 @@ import { useState } from "react";
 import { HeartHandshake } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { SectionHeader } from "../components/ui/SectionHeader";
+import { sendPrayerEmail } from "../services/ministryEmailApi";
+import { submitPrayerRequest } from "../services/platformStore";
 
 export function Prayer() {
   const [status, setStatus] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setStatus("Thank you. Your prayer request has been received, and our team will stand with you in prayer.");
-    event.currentTarget.reset();
+    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const request = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      message: formData.get("message"),
+      anonymous: formData.get("anonymous") === "on",
+      confidential: formData.get("confidential") === "on",
+    };
+
+    submitPrayerRequest(request);
+    setIsSending(true);
+
+    try {
+      await sendPrayerEmail(request);
+      setStatus("Thank you. Your prayer request has been received and emailed to chosenwarriorsofficial@gmail.com.");
+      form.reset();
+    } catch (error) {
+      setStatus(error.message);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -21,21 +44,23 @@ export function Prayer() {
           subtitle="Share your request with care and clarity. This form is ready for a future backend."
         />
         <form className="form-card mx-auto w-full max-w-[600px]" aria-label="Prayer request form" onSubmit={handleSubmit}>
-          <input className="form-field" placeholder="Name (optional)" aria-label="Name" autoComplete="name" />
-          <input className="form-field" placeholder="Email (optional)" aria-label="Email" autoComplete="email" type="email" />
-          <textarea className="form-field h-[160px] resize-none py-4" placeholder="Prayer request" aria-label="Prayer request" required />
+          <input className="form-field" name="name" placeholder="Name (optional)" aria-label="Name" autoComplete="name" />
+          <input className="form-field" name="email" placeholder="Email (optional)" aria-label="Email" autoComplete="email" type="email" />
+          <textarea className="form-field h-[160px] resize-none py-4" name="message" placeholder="Prayer request" aria-label="Prayer request" required />
           <label className="flex items-center gap-3 text-[14px] text-black/65">
-            <input type="checkbox" className="h-4 w-4 rounded border-black/20 text-purplePrimary" />
+            <input type="checkbox" name="anonymous" className="h-4 w-4 rounded border-black/20 text-purplePrimary" />
             Submit anonymously
           </label>
           <label className="flex items-center gap-3 text-[14px] text-black/65">
-            <input type="checkbox" className="h-4 w-4 rounded border-black/20 text-purplePrimary" />
+            <input type="checkbox" name="confidential" className="h-4 w-4 rounded border-black/20 text-purplePrimary" />
             Keep this request confidential
           </label>
-          <button className="btn btn-primary w-full" type="submit">
-            Submit Prayer Request
+          <button className="btn btn-primary w-full" type="submit" disabled={isSending}>
+            {isSending ? "Sending..." : "Submit Prayer Request"}
           </button>
-          {status && <p className="rounded-lg bg-softBg p-4 text-[15px] font-semibold text-purplePrimary" role="status">{status}</p>}
+          {status && (
+            <p className="rounded-lg bg-softBg p-4 text-[15px] font-semibold text-purplePrimary" role="status">{status}</p>
+          )}
         </form>
       </div>
     </section>

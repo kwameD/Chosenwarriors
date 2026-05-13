@@ -10,6 +10,7 @@ export const ministryEvents = [
     image: "/founder-davina-bonsu.jpg",
     link: "https://us04web.zoom.us/j/7841667945?pwd=71u-yBX9L8n94s_3ocE9sqSn5PnNqf.1",
     password: "CW",
+    capacity: 100,
   },
   {
     slug: "revival-night",
@@ -20,6 +21,7 @@ export const ministryEvents = [
     description: "A night of worship, prayer, teaching, and spiritual activation.",
     image: "/founder-davina-bonsu.jpg",
     link: "https://chat.whatsapp.com/KInY0eOLgWM4lWyPuxW6pr",
+    capacity: 75,
   },
   {
     slug: "chosen-to-rescue-outreach",
@@ -30,7 +32,28 @@ export const ministryEvents = [
     description: "Serving children in need through giving, outreach, and evangelism.",
     image: "/founder-davina-bonsu.jpg",
     link: "https://chat.whatsapp.com/KInY0eOLgWM4lWyPuxW6pr",
+    capacity: 40,
   },
+];
+
+export const donationFunds = [
+  "General Offering",
+  "Missions",
+  "Building Fund",
+  "Outreach",
+  "Events",
+  "Partnership Giving",
+];
+
+export const paymentMethods = ["Credit/Debit Card", "Apple Pay", "Google Pay", "PayPal"];
+
+export const communicationSegments = [
+  "New Visitors",
+  "Members",
+  "Prayer Team",
+  "Event Attendees",
+  "Donors",
+  "Volunteers",
 ];
 
 export const coreValues = [
