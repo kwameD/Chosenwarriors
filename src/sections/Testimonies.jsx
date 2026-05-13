@@ -4,7 +4,7 @@ import { testimonyStories } from "../content/siteContent";
 
 export function Testimonies() {
   return (
-    <section id="testimonies" className="section bg-softBg fade-section">
+    <section id="testimonials" className="section bg-softBg fade-section">
       <div className="container-custom">
         <SectionHeader
           eyebrow="Proof of Transformation"

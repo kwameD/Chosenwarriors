@@ -14,20 +14,20 @@ export function Give() {
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {givingMethods.map((method) => (
-              <div key={method.label} className="rounded-2xl bg-white p-5 shadow-soft">
+              <div key={method.label} className="rounded-lg bg-white p-5 shadow-soft">
                 <p className="font-bold">{method.label}</p>
                 <p className="text-[14px] text-black/60">{method.value}</p>
               </div>
             ))}
           </div>
-          <Button href="#connect" className="mt-8">
+          <Button href="#contact" className="mt-8">
             Become a Partner
           </Button>
         </div>
         <OptimizedImage
           src={siteImages.giving}
           alt="Hands giving support"
-          className="h-[420px] w-full rounded-2xl object-cover shadow-soft"
+          className="h-[420px] w-full rounded-lg object-cover shadow-soft"
           width="640"
           height="420"
         />

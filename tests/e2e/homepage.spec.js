@@ -2,14 +2,11 @@ import { expect, test } from "@playwright/test";
 
 const primarySections = [
   "home",
-  "media",
-  "testimonies",
+  "ministry-overview",
   "events",
+  "media",
+  "testimonials",
   "give",
-  "about",
-  "prayer",
-  "connect",
-  "foundation",
 ];
 
 test.describe("homepage flow", () => {
@@ -17,17 +14,17 @@ test.describe("homepage flow", () => {
     await page.goto("/");
 
     await expect(page).toHaveTitle(/Chosen Warriors/);
-    await expect(page.getByRole("heading", { name: "You Were Chosen for More" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Raising revivalists for homes, communities, and nations." })).toBeVisible();
 
     for (const sectionId of primarySections) {
       await expect(page.locator(`#${sectionId}`)).toBeAttached();
     }
 
-    await page.getByRole("link", { name: "Join the Movement" }).click();
-    await expect(page.locator("#connect")).toBeInViewport();
+    await page.getByRole("link", { name: "Join Us" }).first().click();
+    await expect(page.getByRole("heading", { name: "Connect with the ministry and take your next step." })).toBeVisible();
 
-    await page.getByRole("link", { name: "Submit Prayer Request" }).click();
-    await expect(page.locator("#prayer")).toBeInViewport();
+    await page.getByRole("link", { name: "Prayer Requests" }).first().click();
+    await expect(page.getByRole("heading", { level: 1, name: "We will stand in prayer with you." })).toBeVisible();
   });
 
   test("keeps the page layout within the viewport", async ({ page }) => {
@@ -68,23 +65,30 @@ test.describe("forms and media", () => {
   test("accepts user input in contact, prayer, and newsletter forms", async ({ page }) => {
     await page.goto("/");
 
+    await page.goto("/#contact");
     const contactForm = page.getByRole("form", { name: "Contact form" });
-    const prayerForm = page.getByRole("form", { name: "Prayer request form" });
-    const newsletterForm = page.getByRole("form", { name: "Newsletter signup form" });
-
     await contactForm.getByLabel("Name").fill("Test Visitor");
     await contactForm.getByLabel("Email").fill("visitor@example.com");
     await contactForm.getByLabel("Message").fill("I would like to connect.");
+    await expect(contactForm.getByLabel("Message")).toHaveValue("I would like to connect.");
+    await contactForm.getByRole("button", { name: "Send Message" }).click();
+    await expect(page.getByRole("status")).toContainText("Thanks for reaching out");
 
+    await page.goto("/#prayer-requests");
+    const prayerForm = page.getByRole("form", { name: "Prayer request form" });
     await prayerForm.getByLabel("Name").fill("Prayer Partner");
     await prayerForm.getByLabel("Email").fill("prayer@example.com");
     await prayerForm.getByLabel("Prayer request").fill("Please pray for clarity.");
-
-    await newsletterForm.getByLabel("Email address").fill("news@example.com");
-
-    await expect(contactForm.getByLabel("Message")).toHaveValue("I would like to connect.");
     await expect(prayerForm.getByLabel("Prayer request")).toHaveValue("Please pray for clarity.");
+    await prayerForm.getByRole("button", { name: "Submit Prayer Request" }).click();
+    await expect(page.getByRole("status")).toContainText("prayer request has been received");
+
+    await page.goto("/");
+    const newsletterForm = page.getByRole("form", { name: "Newsletter signup form" });
+    await newsletterForm.getByLabel("Email address").fill("news@example.com");
     await expect(newsletterForm.getByLabel("Email address")).toHaveValue("news@example.com");
+    await newsletterForm.getByRole("button", { name: "Subscribe" }).click();
+    await expect(page.getByRole("status")).toContainText("signed up");
   });
 
   test("defers the YouTube iframe until the user chooses to play", async ({ page }) => {

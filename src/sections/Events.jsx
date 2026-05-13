@@ -30,7 +30,7 @@ function EventCard({ event }) {
         </div>
         <h3 className="mt-2 text-[20px] font-semibold leading-7">{event.title}</h3>
         {event.password && <p className="mt-2 text-[14px] font-semibold text-black/60">Password: {event.password}</p>}
-        <a href={event.link || "#connect"} {...getExternalLinkProps(event.link)} className="mt-3 inline-flex items-center gap-1 text-[14px] font-bold text-purplePrimary">
+        <a href={event.link || "#contact"} {...getExternalLinkProps(event.link)} className="mt-3 inline-flex items-center gap-1 text-[14px] font-bold text-purplePrimary">
           View <ChevronRight size={16} />
         </a>
       </div>

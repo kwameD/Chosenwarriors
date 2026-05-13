@@ -25,10 +25,18 @@ describe("Navbar integration", () => {
 
     expect(toggle).toHaveAttribute("aria-expanded", "true");
     const mobileMenu = screen.getByRole("navigation", { name: /mobile navigation/i });
-    expect(within(mobileMenu).getByRole("link", { name: "Prayer" })).toHaveAttribute("href", "#prayer");
+    expect(within(mobileMenu).getAllByRole("link", { name: "Prayer Requests" })[0]).toHaveAttribute("href", "#prayer-requests");
 
-    await user.click(within(mobileMenu).getByRole("link", { name: "Prayer" }));
+    await user.click(within(mobileMenu).getAllByRole("link", { name: "Prayer Requests" })[0]);
 
     expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("renders dropdown submenu links", () => {
+    render(<Navbar />);
+
+    expect(screen.getAllByRole("link", { name: "Mission & Vision" })[0]).toHaveAttribute("href", "#mission-vision");
+    expect(screen.getAllByRole("link", { name: "Leadership" })[0]).toHaveAttribute("href", "#leadership");
+    expect(screen.getAllByRole("link", { name: "Testimonials" })[0]).toHaveAttribute("href", "#testimonials");
   });
 });

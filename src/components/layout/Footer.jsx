@@ -1,4 +1,4 @@
-import { contactEmail, footerNavigationLinks, footerSocialLinks, ministryName } from "../../config/siteConfig";
+import { contactEmail, footerNavigationLinks, footerSocialLinks, logoImage, ministryName } from "../../config/siteConfig";
 import { getExternalLinkProps } from "../../utils/links";
 
 export function Footer() {
@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="min-h-[300px] bg-darkText text-white">
       <div className="container-custom grid gap-8 py-16 md:grid-cols-4">
         <div>
-          <h3 className="text-xl font-extrabold">{ministryName}</h3>
+          <img src={logoImage} alt={ministryName} className="h-14 w-auto rounded bg-white p-1" />
           <p className="mt-3 text-[14px] leading-6 text-white/60">A movement raising revivalists through prayer, the Word, and fasting.</p>
         </div>
 

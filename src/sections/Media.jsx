@@ -15,7 +15,7 @@ export function Media() {
           title="Experience the Move of God"
           subtitle="A featured message for prayer, surrender, and spiritual momentum."
         />
-        <div className="relative h-[320px] overflow-hidden rounded-2xl bg-darkText shadow-soft md:h-[600px]">
+        <div className="relative h-[320px] overflow-hidden rounded-lg bg-darkText shadow-soft md:h-[600px]">
           <YouTubeEmbed title={primaryMessage.title} videoId={primaryMessage.youtubeId} />
         </div>
         <div className="mt-8 flex justify-center">

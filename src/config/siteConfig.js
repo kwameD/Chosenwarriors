@@ -1,24 +1,42 @@
 export const ministryName = "Chosen Warriors";
+export const logoImage = "/chosen-warriors-logo.jpg";
 
 // Navigation and contact values used across layout sections.
 export const navigationItems = [
   { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Media", href: "#media" },
-  { label: "Prayer", href: "#prayer" },
-  { label: "Testimonies", href: "#testimonies" },
+  {
+    label: "About",
+    href: "#about",
+    children: [
+      { label: "Mission & Vision", href: "#mission-vision" },
+      { label: "Leadership", href: "#leadership" },
+      { label: "Foundation", href: "#foundation" },
+      { label: "Testimonials", href: "#testimonials" },
+    ],
+  },
+  {
+    label: "Media",
+    href: "#media",
+    children: [
+      { label: "Sermons", href: "#media" },
+      { label: "Gallery", href: "#media-gallery" },
+      { label: "Social Media", href: "#social-media" },
+    ],
+  },
   { label: "Events", href: "#events" },
-  { label: "Give", href: "#give" },
-  { label: "Connect", href: "#connect" },
-  { label: "Foundation", href: "#foundation" },
+  {
+    label: "Contact",
+    href: "#contact",
+    children: [{ label: "Prayer Requests", href: "#prayer-requests" }],
+  },
 ];
 
 export const socialLinks = {
   whatsapp: "https://chat.whatsapp.com/KInY0eOLgWM4lWyPuxW6pr",
   zoom: "https://us04web.zoom.us/j/7841667945?pwd=71u-yBX9L8n94s_3ocE9sqSn5PnNqf.1",
-  instagram: "https://www.instagram.com/reel/CwViHO8pb7s/?igshid=MTc4MmM1YmI2Ng==",
-  tiktok: "https://www.tiktok.com/t/ZT8MtvG2p/",
-  youtube: "https://youtu.be/3pAcTlJ-u9M?si=555JKoSWI8FBNKOg",
+  instagram: "https://www.instagram.com/chosenwarriorsofficial/",
+  tiktok: "https://www.tiktok.com/@chosenwarriorsofficial",
+  youtube: "https://www.youtube.com/@chosenwarriorsofficial",
 };
 
 export const connectSocialLinks = [
@@ -32,6 +50,9 @@ export const footerNavigationLinks = [
   { label: "About", href: "#about" },
   { label: "Media", href: "#media" },
   { label: "Events", href: "#events" },
+  { label: "Foundation", href: "#foundation" },
+  { label: "Contact", href: "#contact" },
+  { label: "Prayer Requests", href: "#prayer-requests" },
 ];
 
 export const footerSocialLinks = [

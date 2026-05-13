@@ -4,7 +4,7 @@ import { siteImages } from "../content/siteContent";
 
 export function Hero() {
   return (
-    <section id="home" className="relative h-[720px] overflow-hidden bg-darkText">
+    <section id="home" className="relative min-h-[680px] overflow-hidden bg-darkText">
       <OptimizedImage
         src={siteImages.hero}
         alt=""
@@ -14,18 +14,21 @@ export function Hero() {
         loading="eager"
         width="1800"
       />
-      <div className="absolute inset-0 bg-black/40" />
-      <div className="container-custom relative z-10 pt-[160px]">
-        <div className="max-w-[600px] text-white">
-          <p className="small-label mb-4 bg-white/15 text-white backdrop-blur">Digital Ministry Platform</p>
-          <h1 className="hero-title">You Were Chosen for More</h1>
+      <div className="absolute inset-0 bg-black/55" />
+      <div className="container-custom relative z-10 flex min-h-[680px] items-center py-20">
+        <div className="max-w-[700px] text-white">
+          <p className="small-label mb-4 bg-white/15 text-goldAccent backdrop-blur">Prayer. Word. Revival.</p>
+          <h1 className="hero-title">Raising revivalists for homes, communities, and nations.</h1>
           <p className="mt-4 text-[18px] leading-8 text-[#EAEAEA]">
-            Raising revivalists through prayer, the Word, and fasting.
+            Chosen Warriors helps believers grow in prayer, stand on Scripture, serve with compassion, and carry the transforming power of Jesus into everyday life.
           </p>
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <Button href="#connect">Join the Movement</Button>
-            <Button href="#prayer" variant="secondary">
-              Submit Prayer Request
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+            <Button href="#contact">Join Us</Button>
+            <Button href="#media" variant="secondary">
+              Watch Sermons
+            </Button>
+            <Button href="#give" variant="secondary">
+              Give Online
             </Button>
           </div>
         </div>

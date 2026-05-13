@@ -4,11 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        purplePrimary: "#6A0DAD",
-        purpleHover: "#8E44AD",
-        goldAccent: "#D4AF37",
-        softBg: "#F7F5FA",
-        darkText: "#1A1A1A"
+        purplePrimary: "#000000",
+        purpleHover: "#1A1A1A",
+        deepPurple: "#000000",
+        goldAccent: "#FFFFFF",
+        warmGold: "#FFFFFF",
+        softBg: "#FFFFFF",
+        darkText: "#000000"
       },
       fontFamily: {
         sans: ["Poppins", "Inter", "system-ui", "sans-serif"]

@@ -6,16 +6,11 @@ describe("App regression", () => {
   it("keeps the expected primary page sections in order", () => {
     const expectedSectionMarkers = [
       "home",
-      "Connect with our live prayer community and walk with people who will stand with you.",
-      "about",
-      "media",
-      "prayer",
-      "Need prayer today?",
-      "testimonies",
+      "ministry-overview",
       "events",
+      "media",
+      "testimonials",
       "give",
-      "connect",
-      "foundation",
       "Stay connected to what God is doing",
     ];
 
@@ -31,8 +26,8 @@ describe("App regression", () => {
   it("renders the key user-facing calls to action", () => {
     render(<App />);
 
-    expect(screen.getByRole("link", { name: /join the movement/i })).toHaveAttribute("href", "#connect");
-    expect(screen.getByRole("link", { name: /submit prayer request/i })).toHaveAttribute("href", "#prayer");
-    expect(screen.getByRole("link", { name: /give to the foundation/i })).toHaveAttribute("href", "#give");
+    expect(screen.getAllByRole("link", { name: /join us/i })[0]).toHaveAttribute("href", "#contact");
+    expect(screen.getByRole("link", { name: /watch sermons/i })).toHaveAttribute("href", "#media");
+    expect(screen.getAllByRole("link", { name: /give online/i })[0]).toHaveAttribute("href", "#give");
   });
 });
