@@ -570,7 +570,8 @@ function FoundationPage({ compact = false }) {
 function MediaLibrary({ platformState }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
-  const messages = [...(platformState?.mediaVideos || []), ...featuredMessages];
+  const adminVideos = platformState?.mediaVideos || [];
+  const messages = [...adminVideos, ...featuredMessages];
   const categories = ["All", ...new Set(messages.map((message) => message.category))];
   const normalizedQuery = query.trim().toLowerCase();
   const filteredMessages = messages.filter((message) => {
@@ -584,15 +585,25 @@ function MediaLibrary({ platformState }) {
     <section id="media" className="section bg-white fade-section">
       <div className="container-custom">
         <SectionHeader eyebrow="Sermons & Video Library" title="Teachings, prayer moments, and ministry media in one place." subtitle="Search by title or filter by category to find the message you need." />
-        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="relative h-[320px] overflow-hidden rounded-lg bg-darkText shadow-soft md:h-[480px]">
+        <div className="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="relative h-[320px] overflow-hidden rounded-lg bg-darkText shadow-soft md:h-[500px]">
             <YouTubeEmbed title={featuredMessage.title} videoId={featuredMessage.youtubeId} />
+            {adminVideos.some((video) => video.id === featuredMessage.id) && (
+              <span className="absolute left-4 top-4 rounded-lg bg-goldAccent px-3 py-2 text-[12px] font-extrabold uppercase tracking-widest text-darkText">
+                Latest Upload
+              </span>
+            )}
           </div>
-          <div>
+          <div className="grid gap-5">
             <p className="small-label text-purplePrimary">Featured Sermon</p>
             <h2 className="mt-4 text-[34px] font-bold leading-[42px]">{featuredMessage.title}</h2>
             <p className="mt-4 text-[18px] leading-8 text-black/65">{featuredMessage.description}</p>
-            <Button href={featuredMessage.url} className="mt-8">
+            <div className="grid gap-3 rounded-lg bg-softBg p-5 sm:grid-cols-3">
+              <MediaStat value={messages.length} label="Messages" />
+              <MediaStat value={categories.length - 1} label="Categories" />
+              <MediaStat value={adminVideos.length} label="Admin uploads" />
+            </div>
+            <Button href={featuredMessage.url} className="w-fit">
               Open on YouTube
               <ExternalLink size={18} />
             </Button>
@@ -625,32 +636,78 @@ function MediaLibrary({ platformState }) {
         </div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {filteredMessages.map((message) => (
-            <article key={message.title} className="card card-hover">
-              <div className="relative h-[180px] overflow-hidden rounded-lg bg-darkText">
-                <YouTubeEmbed title={message.title} videoId={message.youtubeId} />
-              </div>
-              <p className="mt-5 text-[13px] font-bold uppercase tracking-widest text-purplePrimary">{message.category} • {message.date}</p>
-              <h3 className="mt-2 text-[22px] font-bold leading-8">{message.title}</h3>
-              <p className="mt-3 text-[15px] leading-7 text-black/65">{message.description}</p>
-            </article>
-          ))}
+          {filteredMessages.length ? (
+            filteredMessages.map((message) => (
+              <article key={message.id || message.title} className="card card-hover overflow-hidden p-0">
+                <div className="relative h-[210px] overflow-hidden bg-darkText">
+                  <YouTubeEmbed title={message.title} videoId={message.youtubeId} />
+                </div>
+                <div className="p-6">
+                  <p className="text-[13px] font-bold uppercase tracking-widest text-purplePrimary">{message.category} • {message.date}</p>
+                  <h3 className="mt-2 text-[22px] font-bold leading-8">{message.title}</h3>
+                  <p className="mt-3 text-[15px] leading-7 text-black/65">{message.description}</p>
+                  <a href={message.url} {...getExternalLinkProps(message.url)} className="mt-5 inline-flex items-center gap-2 text-[14px] font-bold text-purplePrimary">
+                    Watch on YouTube <ExternalLink size={15} />
+                  </a>
+                </div>
+              </article>
+            ))
+          ) : (
+            <p className="rounded-lg bg-softBg p-6 text-[15px] font-semibold text-black/65 md:col-span-3">No videos match that search yet.</p>
+          )}
         </div>
       </div>
     </section>
   );
 }
 
+function MediaStat({ label, value }) {
+  return (
+    <div>
+      <p className="text-[28px] font-extrabold text-purplePrimary">{value}</p>
+      <p className="text-[13px] font-bold uppercase tracking-widest text-black/55">{label}</p>
+    </div>
+  );
+}
+
 function MediaGallery({ platformState }) {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("All");
   const images = [...(platformState?.mediaImages || []), ...galleryImages];
+  const categories = ["All", ...new Set(images.map((image) => image.category))];
+  const filteredImages = activeCategory === "All" ? images : images.filter((image) => image.category === activeCategory);
+  const featuredImage = images[0];
 
   return (
     <section id="media-gallery" className="section bg-softBg fade-section">
       <div className="container-custom">
         <SectionHeader eyebrow="Media Gallery" title="Authentic ministry photography and event highlights." subtitle="Browse leadership, prayer, media, and outreach moments from the ministry." />
+        {featuredImage && (
+          <div className="mb-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <button type="button" onClick={() => setSelectedImage(featuredImage)} className="group overflow-hidden rounded-lg bg-white text-left shadow-soft">
+              <OptimizedImage src={featuredImage.src} alt={featuredImage.alt} className="h-[360px] w-full object-cover transition duration-300 group-hover:scale-105 md:h-[440px]" loading="eager" width="760" height="440" />
+            </button>
+            <div className="grid content-center gap-4 rounded-lg bg-white p-6 shadow-soft">
+              <p className="small-label bg-softBg text-purplePrimary">{featuredImage.category}</p>
+              <h3 className="text-[30px] font-bold leading-9">{featuredImage.alt}</h3>
+              <p className="text-[16px] leading-7 text-black/65">New admin uploads appear here first, then flow into the full ministry gallery below.</p>
+            </div>
+          </div>
+        )}
+        <div className="mb-8 flex flex-wrap gap-2" aria-label="Gallery categories">
+          {categories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setActiveCategory(category)}
+              className={`rounded-lg px-4 py-2 text-sm font-bold transition ${category === activeCategory ? "bg-purplePrimary text-white" : "bg-white text-purplePrimary hover:bg-purplePrimary/10"}`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {images.map((image) => (
+          {filteredImages.map((image) => (
             <button key={image.id || `${image.category}-${image.alt}`} type="button" onClick={() => setSelectedImage(image)} className="group overflow-hidden rounded-lg bg-white text-left shadow-soft">
               <OptimizedImage src={image.src} alt={image.alt} className="h-[260px] w-full object-cover transition duration-300 group-hover:scale-105" loading="eager" width="360" height="260" />
               <span className="flex items-center justify-between p-4 text-[14px] font-bold uppercase tracking-widest text-purplePrimary">
@@ -1035,8 +1092,13 @@ function MemberPortalPage({ platformState }) {
 function AdminDashboardPage({ platformState }) {
   const [status, setStatus] = useState("");
   const [selectedImageId, setSelectedImageId] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
+  const [imageDetails, setImageDetails] = useState({ alt: "", category: "Ministry" });
+  const [videoDraft, setVideoDraft] = useState({ category: "Teaching", description: "", title: "", youtubeUrl: "" });
   const currentUser = getCurrentUser(platformState);
   const totalDonations = platformState.donations.reduce((sum, donation) => sum + Number(donation.amount || 0), 0);
+  const selectedImage = platformState.mediaImages.find((image) => image.id === selectedImageId);
+  const videoPreviewId = getYouTubeIdFromInput(videoDraft.youtubeUrl);
 
   const handleAdminLogin = () => {
     loginMember("admin@chosenwarriors.local");
@@ -1066,15 +1128,15 @@ function AdminDashboardPage({ platformState }) {
     const formData = new FormData(event.currentTarget);
     const imageFile = formData.get("image");
 
-    if (!(imageFile instanceof File) || !imageFile.size) {
+    if (!selectedImageId && (!(imageFile instanceof File) || !imageFile.size)) {
       setStatus("Choose an image file before saving media.");
       return;
     }
 
     const imagePayload = {
-      src: await readImageFile(imageFile),
-      alt: formData.get("alt"),
-      category: formData.get("category"),
+      src: imageFile instanceof File && imageFile.size ? await readImageFile(imageFile) : selectedImage?.src,
+      alt: imageDetails.alt,
+      category: imageDetails.category,
     };
 
     if (selectedImageId) {
@@ -1096,28 +1158,53 @@ function AdminDashboardPage({ platformState }) {
     }
 
     setSelectedImageId("");
+    setImagePreview("");
+    setImageDetails({ alt: "", category: "Ministry" });
     form.reset();
   };
 
   const handleMediaVideoSubmit = (event) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
 
     try {
       const nextState = addMediaVideo({
-        title: formData.get("title"),
-        youtubeUrl: formData.get("youtubeUrl"),
-        category: formData.get("category"),
-        description: formData.get("description"),
+        title: videoDraft.title,
+        youtubeUrl: videoDraft.youtubeUrl,
+        category: videoDraft.category,
+        description: videoDraft.description,
       });
       saveMediaVideoRecord(nextState.mediaVideos[0]).catch(() => {
         setStatus("YouTube video loaded locally, but the database save failed.");
       });
       setStatus("YouTube video loaded into the media library.");
+      setVideoDraft({ category: "Teaching", description: "", title: "", youtubeUrl: "" });
       event.currentTarget.reset();
     } catch (error) {
       setStatus(error.message);
     }
+  };
+
+  const handleSelectedImageChange = (event) => {
+    const nextImageId = event.target.value;
+    const nextImage = platformState.mediaImages.find((image) => image.id === nextImageId);
+
+    setSelectedImageId(nextImageId);
+    setImagePreview(nextImage?.src || "");
+    setImageDetails({
+      alt: nextImage?.alt || "",
+      category: nextImage?.category || "Ministry",
+    });
+  };
+
+  const handleImageFileChange = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      setImagePreview(selectedImage?.src || "");
+      return;
+    }
+
+    setImagePreview(await readImageFile(file));
   };
 
   const downloadContacts = () => {
@@ -1221,25 +1308,58 @@ function AdminDashboardPage({ platformState }) {
               <form className="form-card" aria-label="Admin media image form" onSubmit={handleMediaImageSubmit}>
                 <ImageIcon className="h-10 w-10 text-purplePrimary" />
                 <h2 className="text-[28px] font-bold leading-9">Upload or change pictures</h2>
-                <select className="form-field" aria-label="Picture to replace" value={selectedImageId} onChange={(event) => setSelectedImageId(event.target.value)}>
+                {imagePreview ? (
+                  <div className="overflow-hidden rounded-lg border border-black/10 bg-softBg">
+                    <OptimizedImage src={imagePreview} alt={imageDetails.alt || "Selected gallery preview"} className="h-[260px] w-full object-cover" width="520" height="260" />
+                  </div>
+                ) : (
+                  <div className="grid h-[180px] place-items-center rounded-lg border border-dashed border-black/20 bg-softBg text-[14px] font-bold text-black/50">
+                    Picture preview
+                  </div>
+                )}
+                <select className="form-field" aria-label="Picture to replace" value={selectedImageId} onChange={handleSelectedImageChange}>
                   <option value="">Add new gallery picture</option>
                   {platformState.mediaImages.map((image) => (
                     <option key={image.id} value={image.id}>{image.alt}</option>
                   ))}
                 </select>
-                <input className="form-field" name="image" type="file" accept="image/*" aria-label="Picture file" required />
-                <input className="form-field" name="alt" placeholder="Image description" aria-label="Image description" required />
-                <input className="form-field" name="category" placeholder="Category" aria-label="Image category" defaultValue="Ministry" required />
-                <button className="btn btn-primary" type="submit">Save Picture</button>
+                <input className="form-field" name="image" type="file" accept="image/*" aria-label="Picture file" required={!selectedImageId} onChange={handleImageFileChange} />
+                <input className="form-field" name="alt" placeholder="Image description" aria-label="Image description" value={imageDetails.alt} onChange={(event) => setImageDetails((current) => ({ ...current, alt: event.target.value }))} required />
+                <input className="form-field" name="category" placeholder="Category" aria-label="Image category" value={imageDetails.category} onChange={(event) => setImageDetails((current) => ({ ...current, category: event.target.value }))} required />
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <button className="btn btn-primary flex-1" type="submit">Save Picture</button>
+                  {selectedImageId && (
+                    <button
+                      className="btn btn-outline flex-1"
+                      type="button"
+                      onClick={() => {
+                        setSelectedImageId("");
+                        setImagePreview("");
+                        setImageDetails({ alt: "", category: "Ministry" });
+                      }}
+                    >
+                      Add New
+                    </button>
+                  )}
+                </div>
               </form>
 
               <form className="form-card" aria-label="Admin YouTube video form" onSubmit={handleMediaVideoSubmit}>
                 <Youtube className="h-10 w-10 text-purplePrimary" />
                 <h2 className="text-[28px] font-bold leading-9">Load YouTube videos</h2>
-                <input className="form-field" name="title" placeholder="Video title" aria-label="Video title" required />
-                <input className="form-field" name="youtubeUrl" placeholder="YouTube URL or video ID" aria-label="YouTube URL or video ID" required />
-                <input className="form-field" name="category" placeholder="Category" aria-label="Video category" defaultValue="Teaching" required />
-                <textarea className="form-field h-[120px] resize-none py-4" name="description" placeholder="Video description" aria-label="Video description" required />
+                <div className="relative h-[220px] overflow-hidden rounded-lg bg-darkText">
+                  {videoPreviewId ? (
+                    <YouTubeEmbed title={videoDraft.title || "YouTube video preview"} videoId={videoPreviewId} />
+                  ) : (
+                    <div className="grid h-full place-items-center text-center text-[14px] font-bold text-white/70">
+                      Paste a YouTube link to preview it
+                    </div>
+                  )}
+                </div>
+                <input className="form-field" name="title" placeholder="Video title" aria-label="Video title" value={videoDraft.title} onChange={(event) => setVideoDraft((current) => ({ ...current, title: event.target.value }))} required />
+                <input className="form-field" name="youtubeUrl" placeholder="YouTube URL or video ID" aria-label="YouTube URL or video ID" value={videoDraft.youtubeUrl} onChange={(event) => setVideoDraft((current) => ({ ...current, youtubeUrl: event.target.value }))} required />
+                <input className="form-field" name="category" placeholder="Category" aria-label="Video category" value={videoDraft.category} onChange={(event) => setVideoDraft((current) => ({ ...current, category: event.target.value }))} required />
+                <textarea className="form-field h-[120px] resize-none py-4" name="description" placeholder="Video description" aria-label="Video description" value={videoDraft.description} onChange={(event) => setVideoDraft((current) => ({ ...current, description: event.target.value }))} required />
                 <button className="btn btn-primary" type="submit">Load Video</button>
               </form>
             </div>
@@ -1331,6 +1451,29 @@ function readImageFile(file) {
     reader.addEventListener("error", () => reject(new Error("Unable to read the selected image.")));
     reader.readAsDataURL(file);
   });
+}
+
+function getYouTubeIdFromInput(value) {
+  const input = String(value || "").trim();
+
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
+    return input;
+  }
+
+  try {
+    const url = new URL(input);
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.split("/").filter(Boolean)[0] || "";
+    }
+    if (url.searchParams.get("v")) {
+      return url.searchParams.get("v");
+    }
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const embedIndex = pathParts.findIndex((part) => part === "embed" || part === "shorts");
+    return embedIndex >= 0 ? pathParts[embedIndex + 1] || "" : "";
+  } catch {
+    return "";
+  }
 }
 
 function downloadText(filename, text) {
