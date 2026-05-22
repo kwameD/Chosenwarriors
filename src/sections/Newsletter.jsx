@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Mail } from "lucide-react";
+import { saveSubscriberRecord } from "../services/platformApi";
 import { subscribeEmail } from "../services/platformStore";
 
 export function Newsletter() {
@@ -8,7 +9,10 @@ export function Newsletter() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    subscribeEmail(formData.get("email"));
+    const nextState = subscribeEmail(formData.get("email"));
+    saveSubscriberRecord(nextState.subscribers[0]).catch(() => {
+      setStatus("You are signed up locally, but the database save failed.");
+    });
     setStatus("Welcome. You are signed up for ministry updates.");
     event.currentTarget.reset();
   };

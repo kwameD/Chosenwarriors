@@ -37,9 +37,28 @@ cp .env.example .env
 
 For Gmail, use an app password for `SMTP_PASS`. Without SMTP variables, the backend runs in dry-run mode for local testing.
 
+## API Security
+
+Set `ADMIN_API_KEY` in production before enabling admin API writes from trusted server-side tools. Public visitors can read published media through `/api/platform/public`; private contact and prayer records remain behind `/api/platform` and require the `x-admin-api-key` header. Do not expose that key in browser code.
+
+The backend also adds baseline security headers, removes the Express signature header, limits JSON payload size, and applies a simple API rate limit. Adjust `RATE_LIMIT_WINDOW_MS` and `RATE_LIMIT_MAX` for your host.
+
+When the frontend is deployed separately from the Express API, set `VITE_API_BASE_URL` to the API origin before running `npm run build`. Static hosting alone will not serve `/api/*`; deploy the backend on a Node host or replace those routes with serverless functions.
+
 ## Database
 
-The backend uses SQLite through Node's built-in `node:sqlite` module. By default, records are stored at `data/chosen-warriors.sqlite`, which is ignored by Git. The database stores contact messages, prayer requests, admin-uploaded gallery images, and admin-loaded YouTube videos.
+The backend uses SQLite through Node's built-in `node:sqlite` module for local development when `DATABASE_URL` is empty. By default, local records are stored at `data/chosen-warriors.sqlite`, which is ignored by Git.
+
+For production, set `DATABASE_URL` to a PostgreSQL connection string. The server creates the relational tables it needs at startup and stores contact messages, prayer requests, members, donation intents, event registrations, subscribers, admin-uploaded gallery images, and admin-loaded YouTube videos. The SQL reference lives in `server/schema.postgres.sql`.
+
+Terraform in `infra/terraform` defines an encrypted PostgreSQL RDS instance with managed master credentials. After applying it, get the endpoint outputs and the generated password from the Secrets Manager secret ARN, then set `DATABASE_URL` on the deployed API host:
+
+```bash
+terraform -chdir=infra/terraform init
+terraform -chdir=infra/terraform plan
+```
+
+Do not point browser code directly at RDS. Keep the database private and let the Express API read/write records.
 
 ## Scripts
 
@@ -79,4 +98,4 @@ npx playwright install chromium
 
 ## Deployment
 
-The repository includes an AWS Amplify build specification in `amplify.yml`. The production build outputs to `dist/`.
+The repository includes an AWS Amplify build specification in `amplify.yml` for the static frontend. The production build outputs to `dist/`. The Express API must be deployed separately unless the Amplify project is extended with serverless functions for `/api/*`.

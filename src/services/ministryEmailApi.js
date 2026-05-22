@@ -1,3 +1,5 @@
+const apiBaseUrl = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
 export async function sendContactEmail(message) {
   return sendEmail("/api/contact", message);
 }
@@ -7,7 +9,7 @@ export async function sendPrayerEmail(request) {
 }
 
 async function sendEmail(endpoint, payload) {
-  const response = await fetch(endpoint, {
+  const response = await fetch(`${apiBaseUrl}${endpoint}`, {
     body: JSON.stringify(payload),
     headers: { "Content-Type": "application/json" },
     method: "POST",

@@ -77,7 +77,15 @@ import {
   writePlatformState,
 } from "./services/platformStore";
 import { sendContactEmail } from "./services/ministryEmailApi";
-import { loadPlatformRecords, saveMediaImageRecord, saveMediaVideoRecord, updateMediaImageRecord } from "./services/platformApi";
+import {
+  loadPublicPlatformRecords,
+  saveDonationRecord,
+  saveEventRegistrationRecord,
+  saveMediaImageRecord,
+  saveMediaVideoRecord,
+  saveMemberRecord,
+  updateMediaImageRecord,
+} from "./services/platformApi";
 
 const routeTitles = {
   home: "Home",
@@ -124,13 +132,11 @@ export default function App() {
   useEffect(() => subscribeToPlatformStore(setPlatformState), []);
 
   useEffect(() => {
-    loadPlatformRecords()
+    loadPublicPlatformRecords()
       .then((records) => {
         const state = readPlatformState();
         writePlatformState({
           ...state,
-          contactMessages: mergeById(records.contactMessages, state.contactMessages),
-          prayerRequests: mergeById(records.prayerRequests, state.prayerRequests),
           mediaImages: mergeById(records.mediaImages, state.mediaImages),
           mediaVideos: mergeById(records.mediaVideos, state.mediaVideos),
         });
@@ -760,13 +766,16 @@ function EventDetailPage({ event, platformState }) {
   const handleRegistration = (formEvent) => {
     formEvent.preventDefault();
     const formData = new FormData(formEvent.currentTarget);
-    submitEventRegistration({
+    const nextState = submitEventRegistration({
       eventSlug: event.slug,
       eventTitle: event.title,
       capacity: event.capacity,
       name: formData.get("name"),
       email: formData.get("email"),
       phone: formData.get("phone"),
+    });
+    saveEventRegistrationRecord(nextState.eventRegistrations[0]).catch(() => {
+      setStatus("Registration confirmed locally, but the database save failed.");
     });
     setStatus("Registration confirmed. A confirmation email has been queued.");
     formEvent.currentTarget.reset();
@@ -857,13 +866,16 @@ function GivingPlatformPage({ platformState }) {
     const formData = new FormData(event.currentTarget);
     const amount = formData.get("customAmount") || selectedAmount;
 
-    submitDonationIntent({
+    const nextState = submitDonationIntent({
       name: formData.get("name"),
       email: formData.get("email"),
       amount,
       fund: formData.get("fund"),
       frequency: formData.get("frequency"),
       method: formData.get("method"),
+    });
+    saveDonationRecord(nextState.donations[0]).catch(() => {
+      setStatus("Donation intent saved locally, but the database save failed.");
     });
 
     setStatus(hasExternalCheckout ? "Donation intent saved. Continue to the secure provider checkout to complete the gift." : "Donation intent saved. Add Stripe or PayPal checkout URLs to enable live secure payment collection.");
@@ -931,7 +943,7 @@ function MemberPortalPage({ platformState }) {
   const handleSignup = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    createMember({
+    const nextState = createMember({
       name: formData.get("name"),
       email: formData.get("email"),
       phone: formData.get("phone"),
@@ -939,6 +951,12 @@ function MemberPortalPage({ platformState }) {
       emailOptIn: formData.get("emailOptIn") === "on",
       smsOptIn: formData.get("smsOptIn") === "on",
     });
+    const member = getCurrentUser(nextState);
+    if (member) {
+      saveMemberRecord(member).catch(() => {
+        setStatus("Profile created locally, but the database save failed.");
+      });
+    }
     setStatus("Profile created and email verification simulated. You are now signed in.");
     event.currentTarget.reset();
   };
@@ -956,7 +974,7 @@ function MemberPortalPage({ platformState }) {
   const handleUpdate = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    updateCurrentMember({
+    const nextState = updateCurrentMember({
       name: formData.get("name"),
       email: formData.get("email"),
       phone: formData.get("phone"),
@@ -964,6 +982,12 @@ function MemberPortalPage({ platformState }) {
       emailOptIn: formData.get("emailOptIn") === "on",
       smsOptIn: formData.get("smsOptIn") === "on",
     });
+    const member = getCurrentUser(nextState);
+    if (member) {
+      saveMemberRecord(member).catch(() => {
+        setStatus("Profile updated locally, but the database save failed.");
+      });
+    }
     setStatus("Profile updated.");
   };
 
@@ -1357,11 +1381,11 @@ function ContactPage() {
       message: formData.get("message"),
     };
 
-    submitContactMessage(message);
     setIsSending(true);
 
     try {
       await sendContactEmail(message);
+      submitContactMessage(message);
       setStatus("Thanks for reaching out. Your message has been received and emailed to chosenwarriorsofficial@gmail.com.");
       form.reset();
     } catch (error) {

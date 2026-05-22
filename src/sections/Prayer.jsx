@@ -21,11 +21,11 @@ export function Prayer() {
       confidential: formData.get("confidential") === "on",
     };
 
-    submitPrayerRequest(request);
     setIsSending(true);
 
     try {
       await sendPrayerEmail(request);
+      submitPrayerRequest(request);
       setStatus("Thank you. Your prayer request has been received and emailed to chosenwarriorsofficial@gmail.com.");
       form.reset();
     } catch (error) {
