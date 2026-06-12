@@ -45,7 +45,7 @@ The backend uses SQLite through Node's built-in `node:sqlite` module. By default
 
 ## Admin Editing
 
-Visit `#admin` to upload pictures from desktop or mobile, update the home page event highlight, event dates, event times, event details, and ministry links. Set the Terraform `admin_password` variable before using the admin editor in production:
+Visit `#admin` to upload pictures from desktop or mobile, crop leadership images, update the home page event highlight, event dates, event times, event details, leadership profiles, and ministry links. Set the Terraform `admin_password` variable before using the admin editor in production:
 
 ```bash
 cd infra/terraform

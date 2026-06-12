@@ -237,7 +237,7 @@ function InteriorPage({ content, platformState, route }) {
   if (route === "leadership") {
     return (
       <PageShell eyebrow="Leadership" title="Meet the team serving the mission.">
-        <LeadershipPage />
+        <LeadershipPage leadershipProfiles={content.leadershipProfiles} />
       </PageShell>
     );
   }
@@ -472,7 +472,7 @@ function AboutOverview({ siteImages: editableSiteImages = siteImages }) {
   );
 }
 
-function LeadershipPage() {
+function LeadershipPage({ leadershipProfiles: editableLeadershipProfiles = leadershipProfiles }) {
   return (
     <section id="leadership" className="section bg-white fade-section">
       <div className="container-custom">
@@ -481,7 +481,14 @@ function LeadershipPage() {
           {leadershipProfiles.map((member) => (
             <article key={member.name} className="card card-hover overflow-hidden p-0">
               <div className="overflow-hidden">
-                <OptimizedImage src={member.image} alt={member.name} className="portrait-safe h-[340px] w-full object-cover transition duration-300 hover:scale-105" width="560" height="340" />
+                <OptimizedImage
+                  src={member.image}
+                  alt={member.name}
+                  className="h-[340px] w-full object-cover transition duration-300 hover:scale-105"
+                  style={{ objectPosition: `${member.cropX ?? 50}% ${member.cropY ?? 18}%` }}
+                  width="560"
+                  height="340"
+                />
               </div>
               <div className="p-6">
                 <p className="text-[14px] font-bold uppercase tracking-widest text-purplePrimary">{member.role}</p>
@@ -714,6 +721,13 @@ function AdminPage({ content }) {
     }));
   };
 
+  const handleLeadershipChange = (profileIndex, field, value) => {
+    setDraftContent((current) => ({
+      ...current,
+      leadershipProfiles: current.leadershipProfiles.map((profile, index) => (index === profileIndex ? { ...profile, [field]: value } : profile)),
+    }));
+  };
+
   const handleSettingChange = (field, value) => {
     setDraftContent((current) => ({
       ...current,
@@ -806,6 +820,39 @@ function AdminPage({ content }) {
           </div>
 
           <div className="grid gap-6">
+            <h2 className="text-[30px] font-bold leading-9">Leadership</h2>
+            {draftContent.leadershipProfiles.map((profile, index) => (
+              <article key={profile.name} className="card">
+                <h3 className="text-[24px] font-bold leading-8">{profile.name}</h3>
+                <div className="mt-5 grid gap-5 md:grid-cols-[0.8fr_1.2fr]">
+                  <AdminImageUpload
+                    cropX={profile.cropX}
+                    cropY={profile.cropY}
+                    id={`leadership-image-${index}`}
+                    imageUrl={profile.image}
+                    isUploading={uploadingImageId === `leadership-image-${index}`}
+                    label={`${profile.name} image`}
+                    onCropChange={(field, value) => handleLeadershipChange(index, field, value)}
+                    onUpload={(file) => handleImageUpload(`leadership-image-${index}`, file, (imageUrl) => handleLeadershipChange(index, "image", imageUrl))}
+                  />
+                  <div className="grid gap-4">
+                    <AdminField label="Name" value={profile.name} onChange={(value) => handleLeadershipChange(index, "name", value)} />
+                    <AdminField label="Role" value={profile.role} onChange={(value) => handleLeadershipChange(index, "role", value)} />
+                    <label className="grid gap-2 text-[14px] font-semibold">
+                      Intro quote
+                      <textarea className="form-field h-[100px] resize-none py-4" value={profile.intro} onChange={(event) => handleLeadershipChange(index, "intro", event.target.value)} />
+                    </label>
+                    <label className="grid gap-2 text-[14px] font-semibold">
+                      Bio
+                      <textarea className="form-field h-[140px] resize-none py-4" value={profile.bio} onChange={(event) => handleLeadershipChange(index, "bio", event.target.value)} />
+                    </label>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="grid gap-6">
             <h2 className="text-[30px] font-bold leading-9">Events</h2>
             <label className="card grid gap-2 text-[14px] font-semibold">
               Home page event highlight
@@ -882,12 +929,12 @@ function AdminField({ label, onChange, value }) {
   );
 }
 
-function AdminImageUpload({ id, imageUrl, isUploading, label, onUpload }) {
+function AdminImageUpload({ cropX = 50, cropY = 18, id, imageUrl, isUploading, label, onCropChange, onUpload }) {
   return (
     <div className="grid gap-3 text-[14px] font-semibold">
       <span>{label}</span>
       <div className="overflow-hidden rounded-lg border border-black/10 bg-softBg">
-        <OptimizedImage src={imageUrl} alt="" className="portrait-safe h-[180px] w-full object-cover" width="360" height="180" />
+        <OptimizedImage src={imageUrl} alt="" className="h-[180px] w-full object-cover" style={{ objectPosition: `${cropX}% ${cropY}%` }} width="360" height="180" />
       </div>
       <label className="inline-flex min-h-[52px] cursor-pointer items-center justify-center rounded-lg border-2 border-purplePrimary bg-white px-4 text-center text-purplePrimary transition hover:bg-purplePrimary hover:text-white">
         {isUploading ? "Uploading..." : "Choose Picture"}
@@ -903,6 +950,18 @@ function AdminImageUpload({ id, imageUrl, isUploading, label, onUpload }) {
           }}
         />
       </label>
+      {onCropChange && (
+        <div className="grid gap-3 rounded-lg bg-softBg p-4">
+          <label className="grid gap-2 text-[13px] font-semibold">
+            Horizontal crop: {cropX}%
+            <input type="range" min="0" max="100" value={cropX} onChange={(event) => onCropChange("cropX", Number(event.target.value))} />
+          </label>
+          <label className="grid gap-2 text-[13px] font-semibold">
+            Vertical crop: {cropY}%
+            <input type="range" min="0" max="100" value={cropY} onChange={(event) => onCropChange("cropY", Number(event.target.value))} />
+          </label>
+        </div>
+      )}
       <p className="text-[12px] font-medium leading-5 text-black/55">JPG, PNG, or WebP under 5 MB.</p>
     </div>
   );

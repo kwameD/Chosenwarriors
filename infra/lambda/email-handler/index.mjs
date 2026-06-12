@@ -116,6 +116,7 @@ export async function handler(event) {
 function normalizeEditableContent(content = {}) {
   const siteImages = content.siteImages && typeof content.siteImages === "object" ? content.siteImages : {};
   const ministryEvents = Array.isArray(content.ministryEvents) ? content.ministryEvents : [];
+  const leadershipProfiles = Array.isArray(content.leadershipProfiles) ? content.leadershipProfiles : [];
   const settings = content.settings && typeof content.settings === "object" ? content.settings : {};
 
   return {
@@ -133,8 +134,23 @@ function normalizeEditableContent(content = {}) {
       time: String(event.time || "").trim(),
       title: String(event.title || "").trim(),
     })),
+    leadershipProfiles: leadershipProfiles.map((profile) => ({
+      ...profile,
+      bio: String(profile.bio || "").trim(),
+      cropX: clampCrop(profile.cropX),
+      cropY: clampCrop(profile.cropY),
+      image: String(profile.image || "").trim(),
+      intro: String(profile.intro || "").trim(),
+      name: String(profile.name || "").trim(),
+      role: String(profile.role || "").trim(),
+    })),
     settings,
   };
+}
+
+function clampCrop(value) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? Math.min(Math.max(numberValue, 0), 100) : 50;
 }
 
 function createAdminToken() {

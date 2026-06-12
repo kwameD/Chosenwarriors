@@ -1,5 +1,5 @@
 import { socialLinks } from "../config/siteConfig";
-import { ministryEvents, siteImages } from "../content/siteContent";
+import { leadershipProfiles, ministryEvents, siteImages } from "../content/siteContent";
 
 const CONTENT_KEY = "cw_editable_content";
 const CONTENT_EVENT = "cw:content-updated";
@@ -8,6 +8,11 @@ const ADMIN_TOKEN_KEY = "cw_admin_token";
 export const defaultEditableContent = {
   siteImages,
   ministryEvents,
+  leadershipProfiles: leadershipProfiles.map((profile) => ({
+    ...profile,
+    cropX: 50,
+    cropY: 18,
+  })),
   settings: {
     featuredEventSlug: "revival-night",
     whatsapp: socialLinks.whatsapp,
@@ -114,11 +119,22 @@ function normalizeEditableContent(content = {}) {
       ...event,
       ...(content.ministryEvents?.[index] || {}),
     })),
+    leadershipProfiles: defaultEditableContent.leadershipProfiles.map((profile, index) => ({
+      ...profile,
+      ...(content.leadershipProfiles?.[index] || {}),
+      cropX: clampCrop(content.leadershipProfiles?.[index]?.cropX ?? profile.cropX),
+      cropY: clampCrop(content.leadershipProfiles?.[index]?.cropY ?? profile.cropY),
+    })),
     settings: {
       ...defaultEditableContent.settings,
       ...(content.settings || {}),
     },
   };
+}
+
+function clampCrop(value) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? Math.min(Math.max(numberValue, 0), 100) : 50;
 }
 
 async function request(endpoint, options = {}) {
