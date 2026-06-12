@@ -14,25 +14,7 @@ export const navigationItems = [
       { label: "Testimonials", href: "#testimonials" },
     ],
   },
-  {
-    label: "Media",
-    href: "#media",
-    children: [
-      { label: "Sermons", href: "#media" },
-      { label: "Gallery", href: "#media-gallery" },
-      { label: "Social Media", href: "#social-media" },
-    ],
-  },
   { label: "Events", href: "#events" },
-  { label: "Give", href: "#give-online" },
-  {
-    label: "Portal",
-    href: "#member-portal",
-    children: [
-      { label: "Member Dashboard", href: "#member-portal" },
-      { label: "Admin Dashboard", href: "#admin" },
-    ],
-  },
   {
     label: "Contact",
     href: "#contact",
@@ -57,11 +39,7 @@ export const connectSocialLinks = [
 
 export const footerNavigationLinks = [
   { label: "About", href: "#about" },
-  { label: "Media", href: "#media" },
   { label: "Events", href: "#events" },
-  { label: "Give", href: "#give-online" },
-  { label: "Member Portal", href: "#member-portal" },
-  { label: "Admin", href: "#admin" },
   { label: "Foundation", href: "#foundation" },
   { label: "Contact", href: "#contact" },
   { label: "Prayer Requests", href: "#prayer-requests" },
@@ -75,15 +53,3 @@ export const footerSocialLinks = [
 ];
 
 export const contactEmail = "chosenwarriorsofficial@gmail.com";
-
-export const paymentCheckoutLinks = {
-  stripe: import.meta.env.VITE_STRIPE_CHECKOUT_URL || "",
-  paypal: import.meta.env.VITE_PAYPAL_GIVING_URL || "",
-};
-
-export const integrationStatus = {
-  payments: "Provider-ready: add Stripe or PayPal checkout URLs through Vite environment variables.",
-  email: "Backend-ready: configure SMTP environment variables to send contact and prayer request emails.",
-  sms: "Provider-ready: connect Twilio or TextMagic at the API layer.",
-  analytics: "Provider-ready: add Google Analytics or Firebase Analytics in production.",
-};

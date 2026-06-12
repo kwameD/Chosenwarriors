@@ -9,9 +9,8 @@ const primarySections = [
   "home",
   "ministry-overview",
   "events",
-  "media",
   "testimonials",
-  "give",
+  "partner",
 ];
 
 test.describe("homepage flow", () => {
@@ -44,6 +43,25 @@ test.describe("homepage flow", () => {
 });
 
 test.describe("navigation", () => {
+  test("keeps desktop dropdowns open while moving into submenu links", async ({ page, isMobile }) => {
+    test.skip(isMobile, "Desktop dropdowns are only visible on desktop viewports.");
+
+    await page.goto("/");
+
+    const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
+    await primaryNavigation.getByRole("link", { name: "About" }).hover();
+    await expect(primaryNavigation.getByRole("link", { name: "Mission & Vision" })).toBeVisible();
+
+    await primaryNavigation.getByRole("link", { name: "Mission & Vision" }).hover();
+    await expect(primaryNavigation.getByRole("link", { name: "Mission & Vision" })).toBeVisible();
+
+    await primaryNavigation.getByRole("link", { name: "Contact" }).hover();
+    await expect(primaryNavigation.getByRole("link", { name: "Prayer Requests" })).toBeVisible();
+
+    await primaryNavigation.getByRole("link", { name: "Prayer Requests" }).hover();
+    await expect(primaryNavigation.getByRole("link", { name: "Prayer Requests" })).toBeVisible();
+  });
+
   test("opens the mobile menu and navigates to a section", async ({ page, isMobile }) => {
     test.skip(!isMobile, "Mobile menu is only visible on mobile viewports.");
 
@@ -66,7 +84,7 @@ test.describe("navigation", () => {
   });
 });
 
-test.describe("forms and media", () => {
+test.describe("forms and ministry flows", () => {
   test("accepts user input in contact, prayer, and newsletter forms", async ({ page }) => {
     await page.goto("/");
 
@@ -96,72 +114,35 @@ test.describe("forms and media", () => {
     await expect(page.getByRole("status")).toContainText("signed up");
   });
 
-  test("supports Sprint 3 giving, member, event, and admin workflows", async ({ page }) => {
-    await page.goto("/#give-online");
-    const givingForm = page.getByRole("form", { name: "Online giving form" });
-    await givingForm.getByLabel("Donation purpose").selectOption("Outreach");
-    await givingForm.getByLabel("Giving frequency").selectOption("Monthly recurring");
-    await givingForm.getByLabel("Donor name").fill("Generous Visitor");
-    await givingForm.getByLabel("Email for receipt").fill("giver@example.com");
-    await givingForm.getByRole("button", { name: /create secure checkout/i }).click();
-    await expect(page.getByRole("status")).toContainText("Donation intent saved");
-
-    await page.goto("/#member-portal");
-    const signupForm = page.getByRole("form", { name: "Member signup form" });
-    await signupForm.getByLabel("Full name").fill("Portal Member");
-    await signupForm.getByLabel("Signup email").fill("member@example.com");
-    await signupForm.getByLabel("Phone number").fill("555-0100");
-    await signupForm.getByLabel("Location").fill("New York");
-    await signupForm.getByRole("button", { name: "Create Profile" }).click();
-    await expect(page.getByRole("heading", { name: "Portal Member" })).toBeVisible();
+  test("supports partner and event workflows", async ({ page }) => {
+    await page.goto("/#partner");
+    await expect(page.getByRole("heading", { name: "Take your next step in prayer, service, and community." })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Connect With Us" })).toHaveAttribute("href", "#contact");
+    await expect(page.getByRole("link", { name: "View Gatherings" })).toHaveAttribute("href", "#events");
 
     await page.goto("/#event-daily-prayer-meeting");
     const eventForm = page.getByRole("form", { name: "Daily Prayer Meeting registration form" });
-    await expect(eventForm.getByLabel("Full name")).toHaveValue("Portal Member");
+    await eventForm.getByLabel("Full name").fill("Event Guest");
+    await eventForm.getByLabel("Email").fill("guest@example.com");
+    await eventForm.getByLabel("Phone number").fill("555-0100");
     await eventForm.getByRole("button", { name: "Register for Event" }).click();
     await expect(page.getByRole("status")).toContainText("Registration confirmed");
-
-    await page.goto("/#admin");
-    await page.getByRole("button", { name: "Preview Admin Dashboard" }).click();
-    await expect(page.getByRole("heading", { name: "CRM Lite Contacts" })).toBeVisible();
-    await expect(page.getByText("Member • member@example.com")).toBeVisible();
   });
 
-  test("lets admins upload pictures and load YouTube videos", async ({ page }) => {
+  test("does not expose the removed member portal and protects admin editing", async ({ page }) => {
+    await page.goto("/#member-portal");
+    await expect(page.getByRole("heading", { level: 1, name: "Home" })).toBeVisible();
+    await expect(page.getByRole("form", { name: "Member signup form" })).toHaveCount(0);
+
     await page.goto("/#admin");
-    await page.getByRole("button", { name: "Preview Admin Dashboard" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Update ministry content safely." })).toBeVisible();
+    await expect(page.getByRole("form", { name: "Admin login form" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Preview Admin Dashboard" })).toHaveCount(0);
+  });
 
-    const imageForm = page.getByRole("form", { name: "Admin media image form" });
-    await imageForm.getByLabel("Picture file").setInputFiles("public/chosen-warriors-logo.jpg");
-    await imageForm.getByLabel("Image description").fill("Admin test gallery image");
-    await imageForm.getByLabel("Image category").fill("Admin Upload");
-    await imageForm.getByRole("button", { name: "Save Picture" }).click();
-    await expect(page.getByRole("status")).toContainText("Gallery image uploaded");
-    await expect(page.getByRole("heading", { name: "Uploaded Pictures" }).locator("xpath=ancestor::article").getByText("Admin test gallery image").first()).toBeVisible();
-
-    const videoForm = page.getByRole("form", { name: "Admin YouTube video form" });
-    await videoForm.getByLabel("Video title").fill("Admin Test Message");
-    await videoForm.getByLabel("YouTube URL or video ID").fill("https://youtu.be/3pAcTlJ-u9M");
-    await videoForm.getByLabel("Video category").fill("Teaching");
-    await videoForm.getByLabel("Video description").fill("A message loaded from the admin dashboard.");
-    await videoForm.getByRole("button", { name: "Load Video" }).click();
-    await expect(page.getByRole("status")).toContainText("YouTube video loaded");
-    await expect(page.getByRole("heading", { name: "Loaded Videos" }).locator("xpath=ancestor::article").getByText("Admin Test Message").first()).toBeVisible();
-
-    await page.goto("/#media-gallery");
-    await expect(page.getByRole("button", { name: /admin upload/i }).first()).toBeVisible();
-
+  test("does not expose the removed media route", async ({ page }) => {
     await page.goto("/#media");
-    await expect(page.getByRole("heading", { name: "Admin Test Message" }).first()).toBeVisible();
-  });
-
-  test("defers the YouTube iframe until the user chooses to play", async ({ page }) => {
-    await page.goto("/");
-
-    await expect(page.locator("#media iframe")).toHaveCount(0);
-
-    await page.getByRole("button", { name: /play chosen warriors youtube message/i }).click();
-
-    await expect(page.locator("#media iframe")).toHaveAttribute("src", /youtube\.com\/embed\/3pAcTlJ-u9M/);
+    await expect(page.getByRole("heading", { level: 1, name: "Home" })).toBeVisible();
+    await expect(page.locator("#media")).toHaveCount(0);
   });
 });

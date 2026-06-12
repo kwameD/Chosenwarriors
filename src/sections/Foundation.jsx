@@ -8,17 +8,17 @@ export function Foundation() {
   return (
     <section id="foundation" className="bg-white fade-section">
       <div className="relative flex min-h-[560px] items-center overflow-hidden bg-darkText">
-        <OptimizedImage src={siteImages.foundationHero} alt="" className="absolute inset-0 h-full w-full object-cover" width="1800" height="560" />
+        <OptimizedImage src={siteImages.foundationHero} alt="" className="portrait-safe absolute inset-0 h-full w-full object-cover" width="1800" height="560" />
         <div className="absolute inset-0 bg-black/50" />
         <div className="container-custom relative z-10 text-white">
           <div className="max-w-[620px]">
             <p className="small-label bg-white/15 text-goldAccent backdrop-blur">Foundation</p>
             <h2 className="mt-5 text-[56px] font-bold leading-[64px]">Chosen to Rescue</h2>
             <p className="mt-4 text-[18px] leading-8 text-white/85">
-              Demonstrating the love of Christ to children in need through giving, outreach, and evangelism.
+              Demonstrating the love of Christ to children in need through outreach, service, and evangelism.
             </p>
-            <Button href="#give" className="mt-8">
-              Give to the Foundation
+            <Button href="#contact" className="mt-8">
+              Partner With the Foundation
             </Button>
           </div>
         </div>
@@ -31,7 +31,7 @@ export function Foundation() {
         />
         <div className="grid gap-8 md:grid-cols-3">
           {impactImages.map((image, index) => (
-            <OptimizedImage key={image} src={image} alt={`Chosen to Rescue impact ${index + 1}`} className="h-[260px] w-full rounded-xl object-cover shadow-soft" width="400" height="260" />
+            <OptimizedImage key={image} src={image} alt={`Chosen to Rescue impact ${index + 1}`} className="portrait-safe h-[260px] w-full rounded-xl object-cover shadow-soft" width="400" height="260" />
           ))}
         </div>
         <div className="mt-16 grid items-center gap-10 lg:grid-cols-2">

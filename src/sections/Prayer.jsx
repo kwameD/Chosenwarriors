@@ -41,7 +41,7 @@ export function Prayer() {
         <SectionHeader
           eyebrow="Prayer Page"
           title="We will stand in prayer with you."
-          subtitle="Share your request with care and clarity. This form is ready for a future backend."
+          subtitle="Share your request with care and clarity. It will be sent directly to the ministry team."
         />
         <form className="form-card mx-auto w-full max-w-[600px]" aria-label="Prayer request form" onSubmit={handleSubmit}>
           <input className="form-field" name="name" placeholder="Name (optional)" aria-label="Name" autoComplete="name" />
