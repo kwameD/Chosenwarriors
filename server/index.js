@@ -1,22 +1,36 @@
 import express from "express";
 import nodemailer from "nodemailer";
 import "dotenv/config";
+import crypto from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   readPlatformRecords,
+  readSiteContent,
   saveContactMessage,
-  saveMediaImage,
-  saveMediaVideo,
   savePrayerRequest,
-  updateMediaImage,
+  saveSiteContent,
 } from "./database.js";
+import { socialLinks } from "../src/config/siteConfig.js";
+import { ministryEvents, siteImages } from "../src/content/siteContent.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
 const isProduction = process.env.NODE_ENV === "production";
 const port = Number(process.env.PORT || 4173);
 const ministryEmail = process.env.MINISTRY_EMAIL || "chosenwarriorsofficial@gmail.com";
+const defaultContent = {
+  siteImages,
+  ministryEvents,
+  settings: {
+    whatsapp: socialLinks.whatsapp,
+    zoom: socialLinks.zoom,
+    instagram: socialLinks.instagram,
+    tiktok: socialLinks.tiktok,
+    youtube: socialLinks.youtube,
+  },
+};
+const adminSessions = new Set();
 
 const app = express();
 
@@ -24,6 +38,34 @@ app.use(express.json({ limit: "15mb" }));
 
 app.get("/api/platform", (_request, response) => {
   response.json({ ok: true, ...readPlatformRecords() });
+});
+
+app.get("/api/content", (_request, response) => {
+  response.json({ ok: true, content: normalizeEditableContent(readSiteContent(defaultContent)) });
+});
+
+app.post("/api/admin/login", (request, response) => {
+  const adminPassword = process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD;
+
+  if (!adminPassword) {
+    response.status(503).json({ ok: false, error: "Admin password is not configured. Set ADMIN_PASSWORD in the server environment." });
+    return;
+  }
+
+  if (String(request.body?.password || "") !== adminPassword) {
+    response.status(401).json({ ok: false, error: "Invalid admin password." });
+    return;
+  }
+
+  const sessionToken = crypto.randomUUID();
+  adminSessions.add(sessionToken);
+  response.setHeader("Set-Cookie", `cw_admin_session=${sessionToken}; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400${isProduction ? "; Secure" : ""}`);
+  response.json({ ok: true });
+});
+
+app.put("/api/content", requireAdmin, (request, response) => {
+  const content = normalizeEditableContent(request.body?.content);
+  response.json({ ok: true, content: saveSiteContent(content) });
 });
 
 app.post("/api/contact", async (request, response) => {
@@ -69,51 +111,6 @@ app.post("/api/prayer", async (request, response) => {
   }
 });
 
-app.post("/api/media/images", (request, response) => {
-  try {
-    if (!request.body.src) {
-      throw new Error("Image data is required.");
-    }
-
-    response.json({ ok: true, record: saveMediaImage(request.body) });
-  } catch (error) {
-    response.status(400).json({ ok: false, error: error.message });
-  }
-});
-
-app.put("/api/media/images/:id", (request, response) => {
-  try {
-    if (!request.body.src) {
-      throw new Error("Image data is required.");
-    }
-
-    response.json({ ok: true, record: updateMediaImage(request.params.id, request.body) });
-  } catch (error) {
-    response.status(400).json({ ok: false, error: error.message });
-  }
-});
-
-app.post("/api/media/videos", (request, response) => {
-  try {
-    const youtubeId = getYouTubeId(request.body.youtubeUrl || request.body.youtubeId);
-
-    if (!youtubeId) {
-      throw new Error("Enter a valid YouTube URL or video ID.");
-    }
-
-    response.json({
-      ok: true,
-      record: saveMediaVideo({
-        ...request.body,
-        youtubeId,
-        url: `https://youtu.be/${youtubeId}`,
-      }),
-    });
-  } catch (error) {
-    response.status(400).json({ ok: false, error: error.message });
-  }
-});
-
 if (isProduction) {
   app.use(express.static(resolve(root, "dist")));
   app.get(/^(?!\/api).*/, (_request, response) => {
@@ -149,6 +146,44 @@ function normalizeMessage(body = {}) {
   }
 
   return message;
+}
+
+function requireAdmin(request, response, next) {
+  const sessionToken = parseCookies(request.headers.cookie).cw_admin_session;
+
+  if (!sessionToken || !adminSessions.has(sessionToken)) {
+    response.status(401).json({ ok: false, error: "Admin login required." });
+    return;
+  }
+
+  next();
+}
+
+function parseCookies(cookieHeader = "") {
+  return cookieHeader.split(";").reduce((cookies, cookie) => {
+    const [name, ...valueParts] = cookie.trim().split("=");
+    if (name) {
+      cookies[name] = decodeURIComponent(valueParts.join("="));
+    }
+    return cookies;
+  }, {});
+}
+
+function normalizeEditableContent(content = {}) {
+  return {
+    siteImages: {
+      ...defaultContent.siteImages,
+      ...(content.siteImages || {}),
+    },
+    ministryEvents: defaultContent.ministryEvents.map((event, index) => ({
+      ...event,
+      ...(content.ministryEvents?.[index] || {}),
+    })),
+    settings: {
+      ...defaultContent.settings,
+      ...(content.settings || {}),
+    },
+  };
 }
 
 async function sendMinistryEmail({ fields, heading, replyTo, subject }) {
@@ -189,29 +224,6 @@ function createTransporter() {
       pass: process.env.SMTP_PASS,
     },
   });
-}
-
-function getYouTubeId(value) {
-  const input = String(value || "").trim();
-
-  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
-    return input;
-  }
-
-  try {
-    const url = new URL(input);
-    if (url.hostname.includes("youtu.be")) {
-      return url.pathname.split("/").filter(Boolean)[0] || "";
-    }
-    if (url.searchParams.get("v")) {
-      return url.searchParams.get("v");
-    }
-    const pathParts = url.pathname.split("/").filter(Boolean);
-    const embedIndex = pathParts.findIndex((part) => part === "embed" || part === "shorts");
-    return embedIndex >= 0 ? pathParts[embedIndex + 1] || "" : "";
-  } catch {
-    return "";
-  }
 }
 
 function escapeHtml(value) {

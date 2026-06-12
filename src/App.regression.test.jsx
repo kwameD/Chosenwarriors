@@ -8,9 +8,8 @@ describe("App regression", () => {
       "home",
       "ministry-overview",
       "events",
-      "media",
       "testimonials",
-      "give",
+      "partner",
       "Stay connected to what God is doing",
     ];
 
@@ -27,7 +26,7 @@ describe("App regression", () => {
     render(<App />);
 
     expect(screen.getAllByRole("link", { name: /join us/i })[0]).toHaveAttribute("href", "#contact");
-    expect(screen.getByRole("link", { name: /watch sermons/i })).toHaveAttribute("href", "#media");
-    expect(screen.getAllByRole("link", { name: /give online/i })[0]).toHaveAttribute("href", "#give-online");
+    expect(screen.getByRole("link", { name: /request prayer/i })).toHaveAttribute("href", "#prayer-requests");
+    expect(screen.getByRole("link", { name: /join prayer/i })).toHaveAttribute("href", "#events");
   });
 });

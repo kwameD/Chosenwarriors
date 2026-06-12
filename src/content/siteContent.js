@@ -29,30 +29,18 @@ export const ministryEvents = [
     date: "Upcoming",
     time: "TBD",
     location: "Community Outreach",
-    description: "Serving children in need through giving, outreach, and evangelism.",
+    description: "Serving children in need through outreach, mentorship, and evangelism.",
     image: "/founder-davina-bonsu.jpg",
     link: "https://chat.whatsapp.com/KInY0eOLgWM4lWyPuxW6pr",
     capacity: 40,
   },
 ];
 
-export const donationFunds = [
-  "General Offering",
-  "Missions",
-  "Building Fund",
-  "Outreach",
-  "Events",
-  "Partnership Giving",
-];
-
-export const paymentMethods = ["Credit/Debit Card", "Apple Pay", "Google Pay", "PayPal"];
-
 export const communicationSegments = [
   "New Visitors",
   "Members",
   "Prayer Team",
   "Event Attendees",
-  "Donors",
   "Volunteers",
 ];
 
@@ -83,13 +71,13 @@ export const ministryTimeline = [
   },
   {
     year: "Digital Reach",
-    title: "Online prayer and media expand",
+    title: "Online prayer and community expand",
     text: "Daily meetings, message sharing, and community updates help people connect from wherever they are.",
   },
   {
     year: "Outreach",
     title: "Chosen to Rescue serves families",
-    text: "The ministry extends compassion through practical giving, evangelism, and children-focused outreach.",
+    text: "The ministry extends compassion through practical service, evangelism, and children-focused outreach.",
   },
 ];
 
@@ -99,43 +87,14 @@ export const impactStats = [
   { label: "Outreach focus areas", value: "3" },
 ];
 
-export const givingMethods = [
-  { label: "Zelle", value: "your-email@example.com" },
-  { label: "Cash App", value: "$ChosenWarriors" },
-];
-
 export const impactImages = [
   "/founder-davina-bonsu.jpg",
   "/founder-davina-bonsu.jpg",
   "/founder-davina-bonsu.jpg",
 ];
 
-export const galleryImages = [
-  {
-    src: "/founder-davina-bonsu.jpg",
-    alt: "Chosen Warriors ministry portrait",
-    category: "Leadership",
-  },
-  {
-    src: "/founder-davina-bonsu.jpg",
-    alt: "Chosen Warriors worship and teaching moment",
-    category: "Media",
-  },
-  {
-    src: "/founder-davina-bonsu.jpg",
-    alt: "Chosen to Rescue outreach highlight",
-    category: "Outreach",
-  },
-  {
-    src: "/founder-davina-bonsu.jpg",
-    alt: "Prayer gathering highlight",
-    category: "Prayer",
-  },
-];
-
 export const siteImages = {
   foundationHero: "/founder-davina-bonsu.jpg",
-  giving: "/founder-davina-bonsu.jpg",
   hero: "/founder-davina-bonsu.jpg",
 };
 
@@ -163,51 +122,6 @@ export const testimonyStories = [
   },
 ];
 
-export const featuredMessages = [
-  {
-    title: "Chosen Warriors YouTube Message",
-    youtubeId: "3pAcTlJ-u9M",
-    url: "https://youtu.be/3pAcTlJ-u9M?si=555JKoSWI8FBNKOg",
-    category: "Teaching",
-    date: "Featured",
-    description: "A featured message for prayer, surrender, and spiritual momentum.",
-  },
-  {
-    title: "Night of Prayer and Revival",
-    youtubeId: "3pAcTlJ-u9M",
-    url: "https://youtu.be/3pAcTlJ-u9M?si=555JKoSWI8FBNKOg",
-    category: "Prayer",
-    date: "Recent",
-    description: "A ministry moment centered on worship, prayer, and renewed commitment.",
-  },
-  {
-    title: "Chosen to Serve",
-    youtubeId: "3pAcTlJ-u9M",
-    url: "https://youtu.be/3pAcTlJ-u9M?si=555JKoSWI8FBNKOg",
-    category: "Outreach",
-    date: "Recent",
-    description: "Encouragement for serving families and communities with the love of Jesus.",
-  },
-];
-
-export const socialHighlights = [
-  {
-    platform: "Instagram",
-    title: "Ministry moments and announcements",
-    text: "Follow for reels, encouragement, and visual updates from the community.",
-  },
-  {
-    platform: "YouTube",
-    title: "Messages and video teachings",
-    text: "Watch sermons, conversations, and replay content from ministry gatherings.",
-  },
-  {
-    platform: "TikTok",
-    title: "Short-form encouragement",
-    text: "Catch brief clips, highlights, and practical faith reminders.",
-  },
-];
-
 export const leadershipProfiles = [
   {
     name: "Leadership Team",
@@ -220,7 +134,7 @@ export const leadershipProfiles = [
     name: "Davina Bonsu",
     role: "Founder, Chosen to Rescue",
     intro: "My heart is to see love become practical, visible, and life-giving.",
-    bio: "Davina leads the foundation’s mission to support children in need through outreach, giving, evangelism, and compassionate community care.",
+    bio: "Davina leads the foundation’s mission to support children in need through outreach, evangelism, mentorship, and compassionate community care.",
     image: "/founder-davina-bonsu.jpg",
   },
 ];

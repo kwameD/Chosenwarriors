@@ -1,0 +1,99 @@
+import { socialLinks } from "../config/siteConfig";
+import { ministryEvents, siteImages } from "../content/siteContent";
+
+const CONTENT_KEY = "cw_editable_content";
+const CONTENT_EVENT = "cw:content-updated";
+
+export const defaultEditableContent = {
+  siteImages,
+  ministryEvents,
+  settings: {
+    whatsapp: socialLinks.whatsapp,
+    zoom: socialLinks.zoom,
+    instagram: socialLinks.instagram,
+    tiktok: socialLinks.tiktok,
+    youtube: socialLinks.youtube,
+  },
+};
+
+export function readEditableContent() {
+  try {
+    const savedContent = JSON.parse(window.localStorage.getItem(CONTENT_KEY) || "{}");
+    return normalizeEditableContent(savedContent);
+  } catch {
+    return defaultEditableContent;
+  }
+}
+
+export function saveEditableContent(nextContent) {
+  const normalizedContent = normalizeEditableContent(nextContent);
+  window.localStorage.setItem(CONTENT_KEY, JSON.stringify(normalizedContent));
+  window.dispatchEvent(new CustomEvent(CONTENT_EVENT, { detail: normalizedContent }));
+  return normalizedContent;
+}
+
+export async function loadEditableContent() {
+  const data = await request("/api/content");
+  const normalizedContent = normalizeEditableContent(data.content);
+  window.localStorage.setItem(CONTENT_KEY, JSON.stringify(normalizedContent));
+  window.dispatchEvent(new CustomEvent(CONTENT_EVENT, { detail: normalizedContent }));
+  return normalizedContent;
+}
+
+export async function loginAdmin(password) {
+  return request("/api/admin/login", {
+    method: "POST",
+    body: JSON.stringify({ password }),
+  });
+}
+
+export async function saveEditableContentToServer(nextContent) {
+  const data = await request("/api/content", {
+    method: "PUT",
+    body: JSON.stringify({ content: normalizeEditableContent(nextContent) }),
+  });
+  return saveEditableContent(data.content);
+}
+
+export function subscribeToEditableContent(listener) {
+  const handleContentUpdate = (event) => listener(event.detail || readEditableContent());
+  window.addEventListener(CONTENT_EVENT, handleContentUpdate);
+  window.addEventListener("storage", handleContentUpdate);
+
+  return () => {
+    window.removeEventListener(CONTENT_EVENT, handleContentUpdate);
+    window.removeEventListener("storage", handleContentUpdate);
+  };
+}
+
+function normalizeEditableContent(content = {}) {
+  return {
+    siteImages: {
+      ...defaultEditableContent.siteImages,
+      ...(content.siteImages || {}),
+    },
+    ministryEvents: defaultEditableContent.ministryEvents.map((event, index) => ({
+      ...event,
+      ...(content.ministryEvents?.[index] || {}),
+    })),
+    settings: {
+      ...defaultEditableContent.settings,
+      ...(content.settings || {}),
+    },
+  };
+}
+
+async function request(endpoint, options = {}) {
+  const response = await fetch(endpoint, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...options.headers },
+    ...options,
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || data.ok === false) {
+    throw new Error(data.error || "Unable to update site content.");
+  }
+
+  return data;
+}

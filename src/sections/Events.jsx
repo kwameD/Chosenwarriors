@@ -22,7 +22,7 @@ export function Events() {
 function EventCard({ event }) {
   return (
     <article className="event-card card-hover h-[300px]">
-      <OptimizedImage src={event.image} alt={event.title} className="h-[150px] w-full object-cover" width="380" height="150" />
+      <OptimizedImage src={event.image} alt={event.title} className="portrait-safe h-[150px] w-full object-cover" width="380" height="150" />
       <div className="p-5">
         <div className="flex items-center gap-2 text-[14px] font-semibold text-purplePrimary">
           <Calendar size={16} />

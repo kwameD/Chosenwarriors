@@ -1,6 +1,6 @@
 # Chosen Warriors
 
-Chosen Warriors is a Vite and React ministry website for prayer, media, events, giving, community connection, and the Chosen to Rescue foundation.
+Chosen Warriors is a Vite and React ministry website for prayer, events, community connection, and the Chosen to Rescue foundation.
 
 ## Tech Stack
 
@@ -39,7 +39,11 @@ For Gmail, use an app password for `SMTP_PASS`. Without SMTP variables, the back
 
 ## Database
 
-The backend uses SQLite through Node's built-in `node:sqlite` module. By default, records are stored at `data/chosen-warriors.sqlite`, which is ignored by Git. The database stores contact messages, prayer requests, admin-uploaded gallery images, and admin-loaded YouTube videos.
+The backend uses SQLite through Node's built-in `node:sqlite` module. By default, records are stored at `data/chosen-warriors.sqlite`, which is ignored by Git. The database stores contact messages, prayer requests, and admin-edited site content.
+
+## Admin Editing
+
+Visit `#admin` to update pictures, event dates, event details, and ministry links. Set `ADMIN_PASSWORD` in the server environment before using the admin editor in production.
 
 ## Scripts
 
@@ -63,7 +67,7 @@ The test suite is organized by purpose:
 - Unit tests cover reusable UI components.
 - Integration tests cover interactive component behavior.
 - Regression tests cover the main page structure and key calls to action.
-- End-to-end tests run in Chromium through Playwright and cover website flow, responsive navigation, forms, layout overflow, and lazy media loading.
+- End-to-end tests run in Chromium through Playwright and cover website flow, responsive navigation, forms, layout overflow, and removed-route guards.
 
 Run everything with:
 

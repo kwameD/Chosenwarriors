@@ -21,7 +21,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/5 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-black/5 bg-white/95 shadow-[0_8px_30px_rgba(26,26,26,0.04)] backdrop-blur transition-shadow duration-300">
       <nav className="container-custom flex h-20 items-center justify-between" aria-label="Primary navigation">
         <a href="#home" className="logo-mark" aria-label={`${ministryName} home`}>
           <img src={logoImage} alt="" className="h-12 w-auto" />
@@ -29,12 +29,12 @@ export function Navbar() {
 
         <NavigationLinks activeHash={activeHash} className="hidden items-center gap-2 text-[15px] font-semibold lg:flex" />
 
-        <a href="#contact" className="hidden h-11 items-center rounded-lg bg-purplePrimary px-5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-purpleHover md:inline-flex">
+        <a href="#contact" className="hidden h-11 items-center rounded-lg bg-purplePrimary px-5 text-sm font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-purpleHover hover:shadow-lg hover:shadow-purplePrimary/20 md:inline-flex">
           Join Us
         </a>
 
         <button
-          className="grid h-11 w-11 place-items-center rounded-lg border border-black/10 lg:hidden"
+          className="grid h-11 w-11 place-items-center rounded-lg border border-black/10 transition hover:-translate-y-0.5 hover:border-purplePrimary hover:text-purplePrimary lg:hidden"
           onClick={() => setIsMenuOpen((current) => !current)}
           aria-label="Toggle menu"
           aria-expanded={isMenuOpen}
@@ -44,7 +44,7 @@ export function Navbar() {
       </nav>
 
       {isMenuOpen && (
-        <nav className="border-t border-black/5 bg-white px-5 pb-6 pt-3 shadow-soft lg:hidden" aria-label="Mobile navigation">
+        <nav className="mobile-menu-enter border-t border-black/5 bg-white px-5 pb-6 pt-3 shadow-soft lg:hidden" aria-label="Mobile navigation">
           <NavigationLinks activeHash={activeHash} className="grid gap-1" linkClassName="rounded-lg px-3 py-3 font-medium hover:bg-softBg" onNavigate={closeMenu} />
         </nav>
       )}
@@ -81,18 +81,20 @@ function NavigationLinks({ activeHash, className, linkClassName = "rounded-lg px
                 {item.label}
                 <ChevronDown size={16} className="transition group-hover:rotate-180" />
               </a>
-              <div className="left-0 top-full hidden min-w-[210px] rounded-lg border border-black/5 bg-white p-2 shadow-soft group-hover:absolute group-hover:grid group-focus-within:absolute group-focus-within:grid lg:mt-2">
-                {item.children.map((child) => (
-                  <a
-                    key={child.href}
-                    href={child.href}
-                    onClick={onNavigate}
-                    className={`rounded-md px-3 py-2 text-sm transition hover:bg-softBg hover:text-purplePrimary ${child.href === activeHash ? "bg-purplePrimary/10 text-purplePrimary" : ""}`}
-                    aria-current={child.href === activeHash ? "page" : undefined}
-                  >
-                    {child.label}
-                  </a>
-                ))}
+              <div className="menu-panel left-0 top-full hidden min-w-[210px] pt-2 group-hover:absolute group-hover:grid group-focus-within:absolute group-focus-within:grid">
+                <div className="grid rounded-lg border border-black/5 bg-white p-2 shadow-soft">
+                  {item.children.map((child) => (
+                    <a
+                      key={child.href}
+                      href={child.href}
+                      onClick={onNavigate}
+                      className={`rounded-md px-3 py-2 text-sm transition hover:bg-softBg hover:text-purplePrimary ${child.href === activeHash ? "bg-purplePrimary/10 text-purplePrimary" : ""}`}
+                      aria-current={child.href === activeHash ? "page" : undefined}
+                    >
+                      {child.label}
+                    </a>
+                  ))}
+                </div>
               </div>
               <div className="grid pl-4 lg:hidden">
                 {item.children.map((child) => (

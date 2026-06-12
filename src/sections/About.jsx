@@ -14,7 +14,7 @@ export function About() {
         <div className="grid gap-8 md:grid-cols-2">
           {leadershipProfiles.map((member) => (
             <article key={member.name} className="card card-hover flex flex-col gap-6 sm:flex-row">
-              <OptimizedImage src={member.image} alt={member.name} className="h-48 rounded-xl object-cover sm:h-40 sm:w-40" width="360" height="240" />
+              <OptimizedImage src={member.image} alt={member.name} className="portrait-safe h-48 rounded-xl object-cover sm:h-40 sm:w-40" width="360" height="240" />
               <div>
                 <h3 className="text-[28px] font-semibold leading-9">{member.name}</h3>
                 <p className="text-[14px] font-bold uppercase tracking-widest text-purplePrimary">{member.role}</p>
