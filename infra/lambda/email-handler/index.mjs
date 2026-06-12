@@ -4,6 +4,7 @@ const ministryEmail = process.env.MINISTRY_EMAIL || "chosenwarriorsofficial@gmai
 const region = process.env.AWS_REGION || "us-east-1";
 const sesFromEmail = process.env.SES_FROM_EMAIL || ministryEmail;
 const siteContentTable = process.env.SITE_CONTENT_TABLE;
+const uploadBucket = process.env.UPLOAD_BUCKET;
 const adminPassword = process.env.ADMIN_PASSWORD;
 
 const corsHeaders = {
@@ -47,6 +48,14 @@ export async function handler(event) {
       const content = normalizeEditableContent(body.content);
       await saveSiteContent(content);
       return jsonResponse(200, { ok: true, content });
+    }
+
+    if (method === "POST" && path.endsWith("/uploads")) {
+      if (!isAdminRequest(event)) {
+        return jsonResponse(401, { ok: false, error: "Admin login required." });
+      }
+
+      return jsonResponse(200, { ok: true, ...(await createUploadTarget(body)) });
     }
 
     if (method === "POST" && path.endsWith("/contact")) {
@@ -191,6 +200,30 @@ async function saveSiteContent(content) {
   });
 }
 
+async function createUploadTarget(body = {}) {
+  if (!uploadBucket) {
+    throw new Error("Image upload storage is not configured.");
+  }
+
+  const contentType = String(body.contentType || "").trim();
+
+  if (!contentType.startsWith("image/")) {
+    throw new Error("Upload an image file.");
+  }
+
+  const fileName = String(body.fileName || "image").replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 80);
+  const objectKey = `uploads/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
+
+  return {
+    uploadUrl: createPresignedS3PutUrl({
+      bucket: uploadBucket,
+      contentType,
+      key: objectKey,
+    }),
+    publicUrl: `https://${uploadBucket}.s3.${region}.amazonaws.com/${encodeS3Key(objectKey)}`,
+  };
+}
+
 async function dynamodbRequest(target, body) {
   const response = await signedAwsRequest({
     body: JSON.stringify(body),
@@ -208,6 +241,46 @@ async function dynamodbRequest(target, body) {
   }
 
   return data;
+}
+
+function createPresignedS3PutUrl({ bucket, contentType, key }) {
+  const service = "s3";
+  const host = `${bucket}.s3.${region}.amazonaws.com`;
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
+  const dateStamp = amzDate.slice(0, 8);
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const canonicalUri = `/${encodeS3Key(key)}`;
+  const queryParams = {
+    "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+    "X-Amz-Credential": `${process.env.AWS_ACCESS_KEY_ID}/${credentialScope}`,
+    "X-Amz-Date": amzDate,
+    "X-Amz-Expires": "300",
+    "X-Amz-SignedHeaders": "content-type;host",
+  };
+
+  if (process.env.AWS_SESSION_TOKEN) {
+    queryParams["X-Amz-Security-Token"] = process.env.AWS_SESSION_TOKEN;
+  }
+
+  const canonicalQuery = canonicalizeQuery(queryParams);
+  const canonicalHeaders = `content-type:${contentType}\nhost:${host}\n`;
+  const canonicalRequest = ["PUT", canonicalUri, canonicalQuery, canonicalHeaders, "content-type;host", "UNSIGNED-PAYLOAD"].join("\n");
+  const stringToSign = ["AWS4-HMAC-SHA256", amzDate, credentialScope, sha256(canonicalRequest)].join("\n");
+  const signature = hmac(getSigningKey(dateStamp, region, service), stringToSign, "hex");
+
+  return `https://${host}${canonicalUri}?${canonicalQuery}&X-Amz-Signature=${signature}`;
+}
+
+function canonicalizeQuery(params) {
+  return Object.entries(params)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&");
+}
+
+function encodeS3Key(key) {
+  return key.split("/").map((part) => encodeURIComponent(part)).join("/");
 }
 
 function getSigningKey(dateStamp, signingRegion, service) {

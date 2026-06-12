@@ -139,7 +139,10 @@ locals {
   build_spec        = file("${path.module}/../../amplify.yml")
   email_lambda_name = "${var.app_name}-email-handler"
   site_content_name = "${var.app_name}-site-content"
+  upload_bucket     = lower("${var.app_name}-admin-uploads-${data.aws_caller_identity.current.account_id}")
 }
+
+data "aws_caller_identity" "current" {}
 
 data "archive_file" "email_lambda" {
   type        = "zip"
@@ -191,6 +194,13 @@ resource "aws_iam_role_policy" "email_lambda_content" {
         ]
         Effect   = "Allow"
         Resource = "*"
+      },
+      {
+        Action = [
+          "s3:PutObject"
+        ]
+        Effect   = "Allow"
+        Resource = "${aws_s3_bucket.admin_uploads.arn}/uploads/*"
       }
     ]
   })
@@ -211,6 +221,49 @@ resource "aws_ses_email_identity" "ministry" {
   email = var.ses_from_email
 }
 
+resource "aws_s3_bucket" "admin_uploads" {
+  bucket = local.upload_bucket
+}
+
+resource "aws_s3_bucket_public_access_block" "admin_uploads" {
+  bucket = aws_s3_bucket.admin_uploads.id
+
+  block_public_acls       = true
+  block_public_policy     = false
+  ignore_public_acls      = true
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "admin_uploads_public_read" {
+  bucket = aws_s3_bucket.admin_uploads.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadUploadedImages"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.admin_uploads.arn}/uploads/*"
+      }
+    ]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.admin_uploads]
+}
+
+resource "aws_s3_bucket_cors_configuration" "admin_uploads" {
+  bucket = aws_s3_bucket.admin_uploads.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT"]
+    allowed_origins = ["*"]
+    max_age_seconds = 3000
+  }
+}
+
 resource "aws_lambda_function" "email_handler" {
   function_name    = local.email_lambda_name
   role             = aws_iam_role.email_lambda.arn
@@ -226,6 +279,7 @@ resource "aws_lambda_function" "email_handler" {
       SES_FROM_EMAIL     = var.ses_from_email
       ADMIN_PASSWORD     = var.admin_password
       SITE_CONTENT_TABLE = aws_dynamodb_table.site_content.name
+      UPLOAD_BUCKET      = aws_s3_bucket.admin_uploads.bucket
     }
   }
 }
@@ -287,6 +341,12 @@ resource "aws_apigatewayv2_route" "prayer" {
 resource "aws_apigatewayv2_route" "subscribe" {
   api_id    = aws_apigatewayv2_api.email.id
   route_key = "POST /api/subscribe"
+  target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "uploads" {
+  api_id    = aws_apigatewayv2_api.email.id
+  route_key = "POST /api/uploads"
   target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
 }
 

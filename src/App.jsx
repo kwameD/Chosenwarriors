@@ -34,6 +34,7 @@ import {
   readEditableContent,
   saveEditableContentToServer,
   subscribeToEditableContent,
+  uploadAdminImage,
 } from "./services/editableContent";
 import { getExternalLinkProps } from "./utils/links";
 import { Hero, Newsletter, Prayer } from "./sections";
@@ -674,6 +675,7 @@ function AdminPage({ content }) {
   const [draftContent, setDraftContent] = useState(content);
   const [status, setStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadingImageId, setUploadingImageId] = useState("");
 
   useEffect(() => {
     setDraftContent(content);
@@ -722,6 +724,25 @@ function AdminPage({ content }) {
     }));
   };
 
+  const handleImageUpload = async (imageId, file, onUploaded) => {
+    if (!file) {
+      return;
+    }
+
+    setUploadingImageId(imageId);
+    setStatus("");
+
+    try {
+      const imageUrl = await uploadAdminImage(file);
+      onUploaded(imageUrl);
+      setStatus("Image uploaded. Save updates to publish it on the site.");
+    } catch (error) {
+      setStatus(error.message);
+    } finally {
+      setUploadingImageId("");
+    }
+  };
+
   const handleSave = async (event) => {
     event.preventDefault();
     setIsSaving(true);
@@ -764,16 +785,22 @@ function AdminPage({ content }) {
         <form className="grid gap-8" aria-label="Admin content editor" onSubmit={handleSave}>
           <div className="card">
             <h2 className="text-[30px] font-bold leading-9">Pictures</h2>
-            <p className="mt-2 text-[15px] leading-7 text-black/60">Use public image paths such as /founder-davina-bonsu.jpg or a full hosted image URL.</p>
+            <p className="mt-2 text-[15px] leading-7 text-black/60">Upload pictures from your desktop or mobile device, preview them here, then save updates to publish them.</p>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <label className="grid gap-2 text-[14px] font-semibold">
-                Home and about image
-                <input className="form-field" value={draftContent.siteImages.hero} onChange={(event) => handleImageChange("hero", event.target.value)} />
-              </label>
-              <label className="grid gap-2 text-[14px] font-semibold">
-                Foundation image
-                <input className="form-field" value={draftContent.siteImages.foundationHero} onChange={(event) => handleImageChange("foundationHero", event.target.value)} />
-              </label>
+              <AdminImageUpload
+                id="site-hero-image"
+                imageUrl={draftContent.siteImages.hero}
+                isUploading={uploadingImageId === "site-hero-image"}
+                label="Home and about image"
+                onUpload={(file) => handleImageUpload("site-hero-image", file, (imageUrl) => handleImageChange("hero", imageUrl))}
+              />
+              <AdminImageUpload
+                id="foundation-image"
+                imageUrl={draftContent.siteImages.foundationHero}
+                isUploading={uploadingImageId === "foundation-image"}
+                label="Foundation image"
+                onUpload={(file) => handleImageUpload("foundation-image", file, (imageUrl) => handleImageChange("foundationHero", imageUrl))}
+              />
             </div>
           </div>
 
@@ -795,7 +822,13 @@ function AdminPage({ content }) {
                   <AdminField label="Date" value={event.date} onChange={(value) => handleEventChange(index, "date", value)} />
                   <AdminField label="Time" value={event.time} onChange={(value) => handleEventChange(index, "time", value)} />
                   <AdminField label="Location" value={event.location} onChange={(value) => handleEventChange(index, "location", value)} />
-                  <AdminField label="Image" value={event.image} onChange={(value) => handleEventChange(index, "image", value)} />
+                  <AdminImageUpload
+                    id={`event-image-${event.slug}`}
+                    imageUrl={event.image}
+                    isUploading={uploadingImageId === `event-image-${event.slug}`}
+                    label="Event image"
+                    onUpload={(file) => handleImageUpload(`event-image-${event.slug}`, file, (imageUrl) => handleEventChange(index, "image", imageUrl))}
+                  />
                   <AdminField label="Registration link" value={event.link || ""} onChange={(value) => handleEventChange(index, "link", value)} />
                   <AdminField label="Meeting password" value={event.password || ""} onChange={(value) => handleEventChange(index, "password", value)} />
                   <AdminField label="Capacity" value={String(event.capacity || "")} onChange={(value) => handleEventChange(index, "capacity", Number(value) || "")} />
@@ -844,6 +877,32 @@ function AdminField({ label, onChange, value }) {
       {label}
       <input className="form-field" value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
+  );
+}
+
+function AdminImageUpload({ id, imageUrl, isUploading, label, onUpload }) {
+  return (
+    <div className="grid gap-3 text-[14px] font-semibold">
+      <span>{label}</span>
+      <div className="overflow-hidden rounded-lg border border-black/10 bg-softBg">
+        <OptimizedImage src={imageUrl} alt="" className="portrait-safe h-[180px] w-full object-cover" width="360" height="180" />
+      </div>
+      <label className="inline-flex min-h-[52px] cursor-pointer items-center justify-center rounded-lg border-2 border-purplePrimary bg-white px-4 text-center text-purplePrimary transition hover:bg-purplePrimary hover:text-white">
+        {isUploading ? "Uploading..." : "Choose Picture"}
+        <input
+          id={id}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          disabled={isUploading}
+          onChange={(event) => {
+            onUpload(event.target.files?.[0]);
+            event.target.value = "";
+          }}
+        />
+      </label>
+      <p className="text-[12px] font-medium leading-5 text-black/55">JPG, PNG, or WebP under 5 MB.</p>
+    </div>
   );
 }
 

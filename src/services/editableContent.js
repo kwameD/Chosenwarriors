@@ -56,6 +56,36 @@ export async function saveEditableContentToServer(nextContent) {
   return saveEditableContent(data.content);
 }
 
+export async function uploadAdminImage(file) {
+  if (!file?.type?.startsWith("image/")) {
+    throw new Error("Upload an image file.");
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("Upload an image smaller than 5 MB.");
+  }
+
+  const data = await request("/api/uploads", {
+    method: "POST",
+    body: JSON.stringify({
+      contentType: file.type,
+      fileName: file.name,
+    }),
+  });
+
+  const uploadResponse = await fetch(data.uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error("Unable to upload the image.");
+  }
+
+  return data.publicUrl;
+}
+
 export function subscribeToEditableContent(listener) {
   const handleContentUpdate = (event) => listener(event.detail || readEditableContent());
   window.addEventListener(CONTENT_EVENT, handleContentUpdate);
