@@ -37,6 +37,8 @@ cp .env.example .env
 
 For Gmail, use an app password for `SMTP_PASS`. Without SMTP variables, the backend runs in dry-run mode for local testing.
 
+In production, Terraform deploys an AWS Lambda email API and configures Amplify to proxy `/api/contact` and `/api/prayer` to it. Set the Terraform variables `smtp_user` and `smtp_pass` before applying. For Gmail, `smtp_pass` must be a Gmail app password.
+
 ## Database
 
 The backend uses SQLite through Node's built-in `node:sqlite` module. By default, records are stored at `data/chosen-warriors.sqlite`, which is ignored by Git. The database stores contact messages, prayer requests, and admin-edited site content.

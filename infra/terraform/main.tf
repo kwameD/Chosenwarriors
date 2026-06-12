@@ -3,7 +3,108 @@ provider "aws" {
 }
 
 locals {
-  build_spec = file("${path.module}/../../amplify.yml")
+  build_spec        = file("${path.module}/../../amplify.yml")
+  email_lambda_name = "${var.app_name}-email-handler"
+}
+
+data "archive_file" "email_lambda" {
+  type        = "zip"
+  source_dir  = "${path.module}/../lambda/email-handler"
+  output_path = "${path.module}/.terraform/email-handler.zip"
+}
+
+resource "aws_iam_role" "email_lambda" {
+  name = "${local.email_lambda_name}-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "email_lambda_basic" {
+  role       = aws_iam_role.email_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_lambda_function" "email_handler" {
+  function_name    = local.email_lambda_name
+  role             = aws_iam_role.email_lambda.arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.email_lambda.output_path
+  source_code_hash = data.archive_file.email_lambda.output_base64sha256
+  timeout          = 20
+
+  environment {
+    variables = {
+      MINISTRY_EMAIL = var.ministry_email
+      SMTP_HOST      = var.smtp_host
+      SMTP_PORT      = tostring(var.smtp_port)
+      SMTP_SECURE    = tostring(var.smtp_secure)
+      SMTP_USER      = var.smtp_user
+      SMTP_PASS      = var.smtp_pass
+      SMTP_FROM      = var.smtp_from
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_group" "email_lambda" {
+  name              = "/aws/lambda/${aws_lambda_function.email_handler.function_name}"
+  retention_in_days = 14
+}
+
+resource "aws_apigatewayv2_api" "email" {
+  name          = "${var.app_name}-email-api"
+  protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_headers = ["Content-Type"]
+    allow_methods = ["OPTIONS", "POST"]
+    allow_origins = ["*"]
+    max_age       = 3600
+  }
+}
+
+resource "aws_apigatewayv2_integration" "email_lambda" {
+  api_id                 = aws_apigatewayv2_api.email.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.email_handler.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "contact" {
+  api_id    = aws_apigatewayv2_api.email.id
+  route_key = "POST /api/contact"
+  target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "prayer" {
+  api_id    = aws_apigatewayv2_api.email.id
+  route_key = "POST /api/prayer"
+  target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
+}
+
+resource "aws_apigatewayv2_stage" "email" {
+  api_id      = aws_apigatewayv2_api.email.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+resource "aws_lambda_permission" "email_api" {
+  statement_id  = "AllowEmailApiInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.email_handler.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.email.execution_arn}/*/*"
 }
 
 import {
@@ -23,9 +124,15 @@ resource "aws_amplify_app" "chosen_warriors" {
 
   build_spec = local.build_spec
 
-  enable_branch_auto_build = true
+  enable_branch_auto_build    = true
   enable_branch_auto_deletion = false
   enable_auto_branch_creation = false
+
+  custom_rule {
+    source = "/api/<*>"
+    target = "${aws_apigatewayv2_api.email.api_endpoint}/api/<*>"
+    status = "200"
+  }
 
   custom_rule {
     source = "/<*>"
