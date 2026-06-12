@@ -6,6 +6,10 @@ export async function sendPrayerEmail(request) {
   return sendEmail("/api/prayer", request);
 }
 
+export async function sendNewsletterSignup(signup) {
+  return sendEmail("/api/subscribe", signup);
+}
+
 async function sendEmail(endpoint, payload) {
   const response = await fetch(endpoint, {
     body: JSON.stringify(payload),

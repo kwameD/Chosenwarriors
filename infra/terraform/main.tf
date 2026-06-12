@@ -284,6 +284,12 @@ resource "aws_apigatewayv2_route" "prayer" {
   target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
 }
 
+resource "aws_apigatewayv2_route" "subscribe" {
+  api_id    = aws_apigatewayv2_api.email.id
+  route_key = "POST /api/subscribe"
+  target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
+}
+
 resource "aws_apigatewayv2_stage" "email" {
   api_id      = aws_apigatewayv2_api.email.id
   name        = "$default"

@@ -37,7 +37,7 @@ cp .env.example .env
 
 Without SMTP variables, the local backend runs in dry-run mode for testing.
 
-In production, Terraform deploys an AWS Lambda API and configures Amplify to proxy `/api/contact`, `/api/prayer`, `/api/content`, and `/api/admin/login` to it. Production email is sent through AWS SES, not Gmail SMTP. After `terraform apply`, verify the SES sender identity email sent to `chosenwarriorsofficial@gmail.com`. If the AWS account is still in the SES sandbox, request production access before sending to unverified recipients.
+In production, Terraform deploys an AWS Lambda API and configures Amplify to proxy `/api/contact`, `/api/prayer`, `/api/subscribe`, `/api/content`, and `/api/admin/login` to it. Production email is sent through AWS SES, not Gmail SMTP. After `terraform apply`, verify the SES sender identity email sent to `chosenwarriorsofficial@gmail.com`. If the AWS account is still in the SES sandbox, request production access before sending to unverified recipients.
 
 ## Database
 

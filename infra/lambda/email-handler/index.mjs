@@ -82,6 +82,20 @@ export async function handler(event) {
       return jsonResponse(200, { ok: true, delivery: "sent" });
     }
 
+    if (method === "POST" && path.endsWith("/subscribe")) {
+      const email = normalizeEmail(body.email);
+      await sendMinistryEmail({
+        subject: "Newsletter signup from the Chosen Warriors website",
+        heading: "New Newsletter Signup",
+        fields: {
+          Email: email,
+        },
+        replyTo: email,
+      });
+
+      return jsonResponse(200, { ok: true, delivery: "sent" });
+    }
+
     return jsonResponse(404, { ok: false, error: "API route not found." });
   } catch (error) {
     console.error(error);
@@ -227,6 +241,16 @@ function normalizeMessage(body = {}) {
   }
 
   return message;
+}
+
+function normalizeEmail(value) {
+  const email = String(value || "").trim();
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Enter a valid email address.");
+  }
+
+  return email;
 }
 
 async function sendMinistryEmail({ fields, heading, replyTo, subject }) {

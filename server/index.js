@@ -112,6 +112,24 @@ app.post("/api/prayer", async (request, response) => {
   }
 });
 
+app.post("/api/subscribe", async (request, response) => {
+  try {
+    const email = normalizeEmail(request.body?.email);
+    const result = await sendMinistryEmail({
+      subject: "Newsletter signup from the Chosen Warriors website",
+      heading: "New Newsletter Signup",
+      fields: {
+        Email: email,
+      },
+      replyTo: email,
+    });
+
+    response.json({ ok: true, record: { email }, ...result });
+  } catch (error) {
+    response.status(400).json({ ok: false, error: error.message });
+  }
+});
+
 if (isProduction) {
   app.use(express.static(resolve(root, "dist")));
   app.get(/^(?!\/api).*/, (_request, response) => {
@@ -147,6 +165,16 @@ function normalizeMessage(body = {}) {
   }
 
   return message;
+}
+
+function normalizeEmail(value) {
+  const email = String(value || "").trim();
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Enter a valid email address.");
+  }
+
+  return email;
 }
 
 function requireAdmin(request, response, next) {
