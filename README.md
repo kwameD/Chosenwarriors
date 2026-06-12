@@ -37,7 +37,7 @@ cp .env.example .env
 
 For Gmail, use an app password for `SMTP_PASS`. Without SMTP variables, the backend runs in dry-run mode for local testing.
 
-In production, Terraform deploys an AWS Lambda email API and configures Amplify to proxy `/api/contact` and `/api/prayer` to it. Set the Terraform variables `smtp_user` and `smtp_pass` before applying. For Gmail, `smtp_pass` must be a Gmail app password.
+In production, Terraform deploys an AWS Lambda API and configures Amplify to proxy `/api/contact`, `/api/prayer`, `/api/content`, and `/api/admin/login` to it. Set the Terraform variables `smtp_user`, `smtp_pass`, and `admin_password` before applying. For Gmail, `smtp_pass` must be a Gmail app password.
 
 ## Database
 
@@ -45,7 +45,7 @@ The backend uses SQLite through Node's built-in `node:sqlite` module. By default
 
 ## Admin Editing
 
-Visit `#admin` to update pictures, event dates, event details, and ministry links. Set `ADMIN_PASSWORD` in the server environment before using the admin editor in production.
+Visit `#admin` to update pictures, the home page event highlight, event dates, event times, event details, and ministry links. Set the Terraform `admin_password` variable before using the admin editor in production.
 
 ## Scripts
 

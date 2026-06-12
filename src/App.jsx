@@ -178,7 +178,7 @@ function HomePage({ content }) {
     <>
       <Hero siteImages={content.siteImages} />
       <MinistryOverview />
-      <EventHighlight events={content.ministryEvents} />
+      <EventHighlight events={content.ministryEvents} featuredEventSlug={content.settings.featuredEventSlug} />
       <TestimonialPreview />
       <PartnerCta />
       <Newsletter />
@@ -333,8 +333,8 @@ function MinistryOverview() {
   );
 }
 
-function EventHighlight({ events }) {
-  const event = events.find((item) => item.slug !== "daily-prayer-meeting") || events[0];
+function EventHighlight({ events, featuredEventSlug }) {
+  const event = events.find((item) => item.slug === featuredEventSlug) || events.find((item) => item.slug !== "daily-prayer-meeting") || events[0];
 
   return (
     <section id="events" className="section bg-softBg fade-section">
@@ -779,6 +779,14 @@ function AdminPage({ content }) {
 
           <div className="grid gap-6">
             <h2 className="text-[30px] font-bold leading-9">Events</h2>
+            <label className="card grid gap-2 text-[14px] font-semibold">
+              Home page event highlight
+              <select className="form-field" value={draftContent.settings.featuredEventSlug} onChange={(event) => handleSettingChange("featuredEventSlug", event.target.value)}>
+                {draftContent.ministryEvents.map((event) => (
+                  <option key={event.slug} value={event.slug}>{event.title}</option>
+                ))}
+              </select>
+            </label>
             {draftContent.ministryEvents.map((event, index) => (
               <article key={event.slug} className="card">
                 <h3 className="text-[24px] font-bold leading-8">{event.title}</h3>

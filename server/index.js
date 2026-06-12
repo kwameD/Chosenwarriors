@@ -23,6 +23,7 @@ const defaultContent = {
   siteImages,
   ministryEvents,
   settings: {
+    featuredEventSlug: "revival-night",
     whatsapp: socialLinks.whatsapp,
     zoom: socialLinks.zoom,
     instagram: socialLinks.instagram,

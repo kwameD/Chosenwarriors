@@ -2,9 +2,143 @@ provider "aws" {
   region = var.aws_region
 }
 
+resource "aws_vpc" "database" {
+  cidr_block           = "10.42.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Name = "Chosenwarriors database"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
+  }
+}
+
+resource "aws_subnet" "database" {
+  count             = 2
+  vpc_id            = aws_vpc.database.id
+  cidr_block        = "10.42.${count.index + 1}.0/24"
+  availability_zone = count.index == 0 ? "us-east-1a" : "us-east-1b"
+
+  tags = {
+    Name = "Chosenwarriors database ${count.index + 1}"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
+  }
+}
+
+resource "aws_internet_gateway" "database" {
+  vpc_id = aws_vpc.database.id
+
+  tags = {
+    Name = "Chosenwarriors database"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
+  }
+}
+
+resource "aws_route_table" "database" {
+  vpc_id = aws_vpc.database.id
+
+  tags = {
+    Name = "Chosenwarriors database"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
+  }
+}
+
+resource "aws_route_table_association" "database" {
+  count          = 2
+  subnet_id      = aws_subnet.database[count.index].id
+  route_table_id = aws_route_table.database.id
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
+  }
+}
+
+resource "aws_security_group" "postgres" {
+  name        = "chosenwarriors-postgres"
+  description = "PostgreSQL access for the Chosen Warriors API"
+  vpc_id      = aws_vpc.database.id
+
+  egress {
+    description = "Allow outbound database responses"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Chosenwarriors PostgreSQL"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
+  }
+}
+
+resource "aws_db_subnet_group" "chosen_warriors" {
+  name       = "chosenwarriors-postgres-subnets"
+  subnet_ids = aws_subnet.database[*].id
+
+  tags = {
+    Name = "Chosenwarriors PostgreSQL subnet group"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
+  }
+}
+
+resource "aws_db_instance" "postgres" {
+  identifier                  = "chosenwarriors-postgres"
+  allocated_storage           = 20
+  max_allocated_storage       = 100
+  db_name                     = "chosenwarriors"
+  engine                      = "postgres"
+  engine_version              = "16"
+  instance_class              = "db.t3.micro"
+  username                    = "chosenwarriors_admin"
+  manage_master_user_password = true
+  db_subnet_group_name        = aws_db_subnet_group.chosen_warriors.name
+  vpc_security_group_ids      = [aws_security_group.postgres.id]
+  storage_encrypted           = true
+  storage_type                = "gp3"
+  deletion_protection         = true
+  skip_final_snapshot         = false
+  final_snapshot_identifier   = "chosenwarriors-postgres-final"
+
+  tags = {
+    Name = "Chosenwarriors PostgreSQL"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
+  }
+}
+
 locals {
   build_spec        = file("${path.module}/../../amplify.yml")
   email_lambda_name = "${var.app_name}-email-handler"
+  site_content_name = "${var.app_name}-site-content"
 }
 
 data "archive_file" "email_lambda" {
@@ -35,6 +169,36 @@ resource "aws_iam_role_policy_attachment" "email_lambda_basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy" "email_lambda_content" {
+  name = "${local.email_lambda_name}-content"
+  role = aws_iam_role.email_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem"
+        ]
+        Effect   = "Allow"
+        Resource = aws_dynamodb_table.site_content.arn
+      }
+    ]
+  })
+}
+
+resource "aws_dynamodb_table" "site_content" {
+  name         = local.site_content_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "content_key"
+
+  attribute {
+    name = "content_key"
+    type = "S"
+  }
+}
+
 resource "aws_lambda_function" "email_handler" {
   function_name    = local.email_lambda_name
   role             = aws_iam_role.email_lambda.arn
@@ -46,13 +210,15 @@ resource "aws_lambda_function" "email_handler" {
 
   environment {
     variables = {
-      MINISTRY_EMAIL = var.ministry_email
-      SMTP_HOST      = var.smtp_host
-      SMTP_PORT      = tostring(var.smtp_port)
-      SMTP_SECURE    = tostring(var.smtp_secure)
-      SMTP_USER      = var.smtp_user
-      SMTP_PASS      = var.smtp_pass
-      SMTP_FROM      = var.smtp_from
+      MINISTRY_EMAIL     = var.ministry_email
+      SMTP_HOST          = var.smtp_host
+      SMTP_PORT          = tostring(var.smtp_port)
+      SMTP_SECURE        = tostring(var.smtp_secure)
+      SMTP_USER          = var.smtp_user
+      SMTP_PASS          = var.smtp_pass
+      SMTP_FROM          = var.smtp_from
+      ADMIN_PASSWORD     = var.admin_password
+      SITE_CONTENT_TABLE = aws_dynamodb_table.site_content.name
     }
   }
 }
@@ -84,6 +250,24 @@ resource "aws_apigatewayv2_integration" "email_lambda" {
 resource "aws_apigatewayv2_route" "contact" {
   api_id    = aws_apigatewayv2_api.email.id
   route_key = "POST /api/contact"
+  target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "admin_login" {
+  api_id    = aws_apigatewayv2_api.email.id
+  route_key = "POST /api/admin/login"
+  target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "content_read" {
+  api_id    = aws_apigatewayv2_api.email.id
+  route_key = "GET /api/content"
+  target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "content_write" {
+  api_id    = aws_apigatewayv2_api.email.id
+  route_key = "PUT /api/content"
   target    = "integrations/${aws_apigatewayv2_integration.email_lambda.id}"
 }
 

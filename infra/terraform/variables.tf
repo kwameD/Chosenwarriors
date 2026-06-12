@@ -63,3 +63,9 @@ variable "smtp_from" {
   type        = string
   default     = "Chosen Warriors <chosenwarriorsofficial@gmail.com>"
 }
+
+variable "admin_password" {
+  description = "Password used to unlock the production admin content editor."
+  type        = string
+  sensitive   = true
+}
