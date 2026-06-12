@@ -29,15 +29,15 @@ server/           Express backend for email delivery and production hosting
 
 ## Email Setup
 
-Contact messages and prayer requests post to the backend and send email to `chosenwarriorsofficial@gmail.com` through SMTP. Copy `.env.example` to `.env` and add the ministry email credentials:
+Contact messages and prayer requests post to the backend and send email to `chosenwarriorsofficial@gmail.com`. Local development can use SMTP by copying `.env.example` to `.env` and adding ministry email credentials:
 
 ```bash
 cp .env.example .env
 ```
 
-For Gmail, use an app password for `SMTP_PASS`. Without SMTP variables, the backend runs in dry-run mode for local testing.
+Without SMTP variables, the local backend runs in dry-run mode for testing.
 
-In production, Terraform deploys an AWS Lambda API and configures Amplify to proxy `/api/contact`, `/api/prayer`, `/api/content`, and `/api/admin/login` to it. Set the Terraform variables `smtp_user`, `smtp_pass`, and `admin_password` before applying. For Gmail, `smtp_pass` must be a Gmail app password.
+In production, Terraform deploys an AWS Lambda API and configures Amplify to proxy `/api/contact`, `/api/prayer`, `/api/content`, and `/api/admin/login` to it. Production email is sent through AWS SES, not Gmail SMTP. After `terraform apply`, verify the SES sender identity email sent to `chosenwarriorsofficial@gmail.com`. If the AWS account is still in the SES sandbox, request production access before sending to unverified recipients.
 
 ## Database
 
@@ -45,7 +45,12 @@ The backend uses SQLite through Node's built-in `node:sqlite` module. By default
 
 ## Admin Editing
 
-Visit `#admin` to update pictures, the home page event highlight, event dates, event times, event details, and ministry links. Set the Terraform `admin_password` variable before using the admin editor in production.
+Visit `#admin` to update pictures, the home page event highlight, event dates, event times, event details, and ministry links. Set the Terraform `admin_password` variable before using the admin editor in production:
+
+```bash
+cd infra/terraform
+terraform apply -var 'admin_password=YOUR_ADMIN_PASSWORD'
+```
 
 ## Scripts
 

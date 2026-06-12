@@ -1,18 +1,10 @@
-import tls from "node:tls";
 import crypto from "node:crypto";
 
 const ministryEmail = process.env.MINISTRY_EMAIL || "chosenwarriorsofficial@gmail.com";
 const region = process.env.AWS_REGION || "us-east-1";
+const sesFromEmail = process.env.SES_FROM_EMAIL || ministryEmail;
 const siteContentTable = process.env.SITE_CONTENT_TABLE;
 const adminPassword = process.env.ADMIN_PASSWORD;
-const smtpConfig = {
-  from: process.env.SMTP_FROM || process.env.SMTP_USER,
-  host: process.env.SMTP_HOST,
-  pass: process.env.SMTP_PASS,
-  port: Number(process.env.SMTP_PORT || 465),
-  secure: process.env.SMTP_SECURE !== "false",
-  user: process.env.SMTP_USER,
-};
 
 const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type",
@@ -186,39 +178,14 @@ async function saveSiteContent(content) {
 }
 
 async function dynamodbRequest(target, body) {
-  const service = "dynamodb";
-  const host = `${service}.${region}.amazonaws.com`;
-  const payload = JSON.stringify(body);
-  const now = new Date();
-  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
-  const dateStamp = amzDate.slice(0, 8);
-  const headers = {
-    "content-type": "application/x-amz-json-1.0",
-    host,
-    "x-amz-date": amzDate,
-    "x-amz-target": target,
-  };
-
-  if (process.env.AWS_SESSION_TOKEN) {
-    headers["x-amz-security-token"] = process.env.AWS_SESSION_TOKEN;
-  }
-
-  const signedHeaders = Object.keys(headers).sort().join(";");
-  const canonicalHeaders = Object.keys(headers)
-    .sort()
-    .map((key) => `${key}:${headers[key]}\n`)
-    .join("");
-  const canonicalRequest = ["POST", "/", "", canonicalHeaders, signedHeaders, sha256(payload)].join("\n");
-  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
-  const stringToSign = ["AWS4-HMAC-SHA256", amzDate, credentialScope, sha256(canonicalRequest)].join("\n");
-  const signature = hmac(getSigningKey(dateStamp, region, service), stringToSign, "hex");
-
-  headers.authorization = `AWS4-HMAC-SHA256 Credential=${process.env.AWS_ACCESS_KEY_ID}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
-
-  const response = await fetch(`https://${host}/`, {
+  const response = await signedAwsRequest({
+    body: JSON.stringify(body),
+    headers: {
+      "content-type": "application/x-amz-json-1.0",
+      "x-amz-target": target,
+    },
     method: "POST",
-    headers,
-    body: payload,
+    service: "dynamodb",
   });
   const data = await response.json().catch(() => ({}));
 
@@ -263,105 +230,40 @@ function normalizeMessage(body = {}) {
 }
 
 async function sendMinistryEmail({ fields, heading, replyTo, subject }) {
-  if (!smtpConfig.host || !smtpConfig.user || !smtpConfig.pass || !smtpConfig.from) {
-    throw new Error("Email service is not configured. Add SMTP_HOST, SMTP_USER, SMTP_PASS, and SMTP_FROM.");
-  }
-
-  if (!smtpConfig.secure) {
-    throw new Error("This email function expects secure SMTP. Use SMTP_PORT=465 and SMTP_SECURE=true.");
-  }
-
   const text = Object.entries(fields).map(([label, value]) => `${label}: ${value}`).join("\n");
   const htmlRows = Object.entries(fields)
     .map(([label, value]) => `<p><strong>${escapeHtml(label)}:</strong><br />${escapeHtml(value)}</p>`)
     .join("");
-
-  const message = [
-    `From: ${smtpConfig.from}`,
-    `To: ${ministryEmail}`,
-    `Subject: ${encodeHeader(subject)}`,
-    replyTo ? `Reply-To: ${replyTo}` : "",
-    "MIME-Version: 1.0",
-    'Content-Type: multipart/alternative; boundary="cw-boundary"',
-    "",
-    "--cw-boundary",
-    "Content-Type: text/plain; charset=UTF-8",
-    "",
-    text,
-    "--cw-boundary",
-    "Content-Type: text/html; charset=UTF-8",
-    "",
-    `<h2>${escapeHtml(heading)}</h2>${htmlRows}`,
-    "--cw-boundary--",
-    "",
-  ].filter(Boolean).join("\r\n");
-
-  await sendSmtpMessage({ message, recipient: ministryEmail, sender: extractEmailAddress(smtpConfig.from) });
-}
-
-function sendSmtpMessage({ message, recipient, sender }) {
-  return new Promise((resolve, reject) => {
-    const socket = tls.connect(
-      {
-        host: smtpConfig.host,
-        port: smtpConfig.port,
-        servername: smtpConfig.host,
-      },
-      () => runSmtpSession(socket, { message, recipient, sender }).then(resolve, reject),
-    );
-
-    socket.setTimeout(15000, () => {
-      socket.destroy();
-      reject(new Error("SMTP connection timed out."));
-    });
-
-    socket.on("error", reject);
+  const payload = new URLSearchParams({
+    Action: "SendEmail",
+    Source: `Chosen Warriors <${sesFromEmail}>`,
+    "Destination.ToAddresses.member.1": ministryEmail,
+    "Message.Subject.Data": subject,
+    "Message.Subject.Charset": "UTF-8",
+    "Message.Body.Text.Data": text,
+    "Message.Body.Text.Charset": "UTF-8",
+    "Message.Body.Html.Data": `<h2>${escapeHtml(heading)}</h2>${htmlRows}`,
+    "Message.Body.Html.Charset": "UTF-8",
+    Version: "2010-12-01",
   });
-}
 
-async function runSmtpSession(socket, { message, recipient, sender }) {
-  await expectCode(socket, 220);
-  await command(socket, `EHLO ${smtpConfig.host}`, 250);
-  await command(socket, "AUTH LOGIN", 334);
-  await command(socket, Buffer.from(smtpConfig.user).toString("base64"), 334);
-  await command(socket, Buffer.from(smtpConfig.pass).toString("base64"), 235);
-  await command(socket, `MAIL FROM:<${sender}>`, 250);
-  await command(socket, `RCPT TO:<${recipient}>`, 250);
-  await command(socket, "DATA", 354);
-  await command(socket, `${message.replace(/\r?\n\./g, "\r\n..")}\r\n.`, 250);
-  await command(socket, "QUIT", 221);
-  socket.end();
-}
+  if (replyTo) {
+    payload.set("ReplyToAddresses.member.1", replyTo);
+  }
 
-function command(socket, value, expectedCode) {
-  socket.write(`${value}\r\n`);
-  return expectCode(socket, expectedCode);
-}
-
-function expectCode(socket, expectedCode) {
-  return new Promise((resolve, reject) => {
-    let response = "";
-
-    const handleData = (chunk) => {
-      response += chunk.toString("utf8");
-      const lines = response.trimEnd().split(/\r?\n/);
-      const lastLine = lines[lines.length - 1] || "";
-
-      if (!/^\d{3} /.test(lastLine)) {
-        return;
-      }
-
-      socket.off("data", handleData);
-
-      if (lastLine.startsWith(String(expectedCode))) {
-        resolve(response);
-      } else {
-        reject(new Error(`SMTP error: ${response.trim()}`));
-      }
-    };
-
-    socket.on("data", handleData);
+  const response = await signedAwsRequest({
+    body: payload.toString(),
+    headers: {
+      "content-type": "application/x-www-form-urlencoded; charset=utf-8",
+    },
+    method: "POST",
+    service: "email",
   });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`SES error: ${errorText}`);
+  }
 }
 
 function jsonResponse(statusCode, payload, extraHeaders = {}) {
@@ -372,13 +274,39 @@ function jsonResponse(statusCode, payload, extraHeaders = {}) {
   };
 }
 
-function encodeHeader(value) {
-  return `=?UTF-8?B?${Buffer.from(value).toString("base64")}?=`;
-}
+async function signedAwsRequest({ body, headers = {}, method, service }) {
+  const host = `${service}.${region}.amazonaws.com`;
+  const payload = body || "";
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
+  const dateStamp = amzDate.slice(0, 8);
+  const requestHeaders = {
+    ...headers,
+    host,
+    "x-amz-date": amzDate,
+  };
 
-function extractEmailAddress(value) {
-  const match = String(value).match(/<([^>]+)>/);
-  return match?.[1] || value;
+  if (process.env.AWS_SESSION_TOKEN) {
+    requestHeaders["x-amz-security-token"] = process.env.AWS_SESSION_TOKEN;
+  }
+
+  const signedHeaders = Object.keys(requestHeaders).sort().join(";");
+  const canonicalHeaders = Object.keys(requestHeaders)
+    .sort()
+    .map((key) => `${key}:${requestHeaders[key]}\n`)
+    .join("");
+  const canonicalRequest = [method, "/", "", canonicalHeaders, signedHeaders, sha256(payload)].join("\n");
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const stringToSign = ["AWS4-HMAC-SHA256", amzDate, credentialScope, sha256(canonicalRequest)].join("\n");
+  const signature = hmac(getSigningKey(dateStamp, region, service), stringToSign, "hex");
+
+  requestHeaders.authorization = `AWS4-HMAC-SHA256 Credential=${process.env.AWS_ACCESS_KEY_ID}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  return fetch(`https://${host}/`, {
+    method,
+    headers: requestHeaders,
+    body: payload,
+  });
 }
 
 function escapeHtml(value) {

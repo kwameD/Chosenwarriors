@@ -183,6 +183,14 @@ resource "aws_iam_role_policy" "email_lambda_content" {
         ]
         Effect   = "Allow"
         Resource = aws_dynamodb_table.site_content.arn
+      },
+      {
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
       }
     ]
   })
@@ -199,6 +207,10 @@ resource "aws_dynamodb_table" "site_content" {
   }
 }
 
+resource "aws_ses_email_identity" "ministry" {
+  email = var.ses_from_email
+}
+
 resource "aws_lambda_function" "email_handler" {
   function_name    = local.email_lambda_name
   role             = aws_iam_role.email_lambda.arn
@@ -211,12 +223,7 @@ resource "aws_lambda_function" "email_handler" {
   environment {
     variables = {
       MINISTRY_EMAIL     = var.ministry_email
-      SMTP_HOST          = var.smtp_host
-      SMTP_PORT          = tostring(var.smtp_port)
-      SMTP_SECURE        = tostring(var.smtp_secure)
-      SMTP_USER          = var.smtp_user
-      SMTP_PASS          = var.smtp_pass
-      SMTP_FROM          = var.smtp_from
+      SES_FROM_EMAIL     = var.ses_from_email
       ADMIN_PASSWORD     = var.admin_password
       SITE_CONTENT_TABLE = aws_dynamodb_table.site_content.name
     }
@@ -234,7 +241,7 @@ resource "aws_apigatewayv2_api" "email" {
 
   cors_configuration {
     allow_headers = ["Content-Type"]
-    allow_methods = ["OPTIONS", "POST"]
+    allow_methods = ["GET", "OPTIONS", "POST", "PUT"]
     allow_origins = ["*"]
     max_age       = 3600
   }

@@ -17,3 +17,8 @@ output "email_api_endpoint" {
   description = "HTTP API endpoint used by Amplify /api rewrites for contact and prayer emails."
   value       = aws_apigatewayv2_api.email.api_endpoint
 }
+
+output "ses_sender_email" {
+  description = "SES sender address that must be verified before production emails can send."
+  value       = aws_ses_email_identity.ministry.email
+}
