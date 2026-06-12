@@ -3,6 +3,7 @@ import { ministryEvents, siteImages } from "../content/siteContent";
 
 const CONTENT_KEY = "cw_editable_content";
 const CONTENT_EVENT = "cw:content-updated";
+const ADMIN_TOKEN_KEY = "cw_admin_token";
 
 export const defaultEditableContent = {
   siteImages,
@@ -42,10 +43,16 @@ export async function loadEditableContent() {
 }
 
 export async function loginAdmin(password) {
-  return request("/api/admin/login", {
+  const data = await request("/api/admin/login", {
     method: "POST",
     body: JSON.stringify({ password }),
   });
+
+  if (data.adminToken) {
+    window.sessionStorage.setItem(ADMIN_TOKEN_KEY, data.adminToken);
+  }
+
+  return data;
 }
 
 export async function saveEditableContentToServer(nextContent) {
@@ -117,7 +124,11 @@ function normalizeEditableContent(content = {}) {
 async function request(endpoint, options = {}) {
   const response = await fetch(endpoint, {
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...options.headers },
+    headers: {
+      "Content-Type": "application/json",
+      ...getAdminAuthHeader(),
+      ...options.headers,
+    },
     ...options,
   });
   const data = await response.json().catch(() => ({}));
@@ -127,4 +138,9 @@ async function request(endpoint, options = {}) {
   }
 
   return data;
+}
+
+function getAdminAuthHeader() {
+  const adminToken = window.sessionStorage.getItem(ADMIN_TOKEN_KEY);
+  return adminToken ? { Authorization: `Bearer ${adminToken}` } : {};
 }

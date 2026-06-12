@@ -754,6 +754,7 @@ function AdminPage({ content }) {
       setStatus(error.message);
       if (error.message.toLowerCase().includes("admin")) {
         window.sessionStorage.removeItem("cw_admin_unlocked");
+        window.sessionStorage.removeItem("cw_admin_token");
         setIsUnlocked(false);
       }
     } finally {
@@ -857,6 +858,7 @@ function AdminPage({ content }) {
               type="button"
               onClick={() => {
                 window.sessionStorage.removeItem("cw_admin_unlocked");
+                window.sessionStorage.removeItem("cw_admin_token");
                 setIsUnlocked(false);
                 setStatus("Admin console locked.");
               }}

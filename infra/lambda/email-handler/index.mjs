@@ -37,7 +37,8 @@ export async function handler(event) {
         return jsonResponse(401, { ok: false, error: "Invalid admin password." });
       }
 
-      return jsonResponse(200, { ok: true }, { "Set-Cookie": `cw_admin_session=${createAdminToken()}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=86400` });
+      const adminToken = createAdminToken();
+      return jsonResponse(200, { ok: true, adminToken }, { "Set-Cookie": `cw_admin_session=${adminToken}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=86400` });
     }
 
     if (method === "PUT" && path.endsWith("/content")) {
@@ -143,6 +144,7 @@ function createAdminToken() {
 }
 
 function isAdminRequest(event) {
+  const bearerToken = String(event.headers?.authorization || event.headers?.Authorization || "").replace(/^Bearer\s+/i, "");
   const cookieHeader = event.headers?.cookie || event.headers?.Cookie || "";
   const cookies = cookieHeader.split(";").reduce((record, cookie) => {
     const [name, ...valueParts] = cookie.trim().split("=");
@@ -152,7 +154,7 @@ function isAdminRequest(event) {
     return record;
   }, {});
 
-  const [issuedAt, signature] = String(cookies.cw_admin_session || "").split(".");
+  const [issuedAt, signature] = String(bearerToken || cookies.cw_admin_session || "").split(".");
   const expectedSignature = issuedAt ? crypto.createHmac("sha256", adminPassword || "").update(issuedAt).digest("hex") : "";
   const tokenAge = Date.now() - Number(issuedAt);
   const signatureBuffer = Buffer.from(signature || "");
