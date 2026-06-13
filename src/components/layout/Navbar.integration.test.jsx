@@ -25,9 +25,11 @@ describe("Navbar integration", () => {
 
     expect(toggle).toHaveAttribute("aria-expanded", "true");
     const mobileMenu = screen.getByRole("navigation", { name: /mobile navigation/i });
+    expect(within(mobileMenu).getByRole("link", { name: "About" })).toHaveAttribute("href", "#about");
+    expect(within(mobileMenu).getByRole("link", { name: "Contact" })).toHaveAttribute("href", "#contact");
     expect(within(mobileMenu).getAllByRole("link", { name: "Prayer Requests" })[0]).toHaveAttribute("href", "#prayer-requests");
 
-    await user.click(within(mobileMenu).getAllByRole("link", { name: "Prayer Requests" })[0]);
+    await user.click(within(mobileMenu).getByRole("link", { name: "Contact" }));
 
     expect(toggle).toHaveAttribute("aria-expanded", "false");
   });

@@ -45,7 +45,7 @@ export function Navbar() {
 
       {isMenuOpen && (
         <nav className="mobile-menu-enter border-t border-black/5 bg-white px-5 pb-6 pt-3 shadow-soft lg:hidden" aria-label="Mobile navigation">
-          <NavigationLinks activeHash={activeHash} className="grid gap-1" linkClassName="rounded-lg px-3 py-3 font-medium hover:bg-softBg" onNavigate={closeMenu} />
+          <MobileNavigationLinks activeHash={activeHash} onNavigate={closeMenu} />
         </nav>
       )}
 
@@ -60,6 +60,44 @@ export function Navbar() {
         </div>
       )}
     </header>
+  );
+}
+
+function MobileNavigationLinks({ activeHash, onNavigate }) {
+  return (
+    <div className="grid gap-2">
+      {navigationItems.map((item) => {
+        const isActive = item.href === activeHash || item.children?.some((child) => child.href === activeHash);
+
+        return (
+          <div key={item.href} className="grid gap-1">
+            <a
+              href={item.href}
+              onClick={onNavigate}
+              className={`rounded-lg px-3 py-3 font-semibold transition hover:bg-softBg hover:text-purplePrimary ${isActive ? "bg-purplePrimary/10 text-purplePrimary" : ""}`}
+              aria-current={item.href === activeHash ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+            {item.children?.length && (
+              <div className="grid gap-1 pl-4">
+                {item.children.map((child) => (
+                  <a
+                    key={child.href}
+                    href={child.href}
+                    onClick={onNavigate}
+                    className={`rounded-lg px-3 py-2 text-sm font-medium text-black/70 transition hover:bg-softBg hover:text-purplePrimary ${child.href === activeHash ? "bg-purplePrimary/10 text-purplePrimary" : ""}`}
+                    aria-current={child.href === activeHash ? "page" : undefined}
+                  >
+                    {child.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

@@ -62,7 +62,7 @@ test.describe("navigation", () => {
     await expect(primaryNavigation.getByRole("link", { name: "Prayer Requests" })).toBeVisible();
   });
 
-  test("opens the mobile menu and navigates to a section", async ({ page, isMobile }) => {
+  test("opens the mobile menu and navigates across primary pages", async ({ page, isMobile }) => {
     test.skip(!isMobile, "Mobile menu is only visible on mobile viewports.");
 
     await page.goto("/");
@@ -81,6 +81,16 @@ test.describe("navigation", () => {
 
     await expect(menuButton).toHaveAttribute("aria-expanded", "false");
     await expect(page.locator("#events")).toBeInViewport();
+
+    await menuButton.click();
+    await page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "About" }).click();
+    await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByRole("heading", { level: 1, name: "A ministry built for prayer, discipleship, and transformation." })).toBeVisible();
+
+    await menuButton.click();
+    await page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "Contact" }).click();
+    await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByRole("heading", { level: 1, name: "Connect with the ministry and take your next step." })).toBeVisible();
   });
 });
 
