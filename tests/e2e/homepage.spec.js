@@ -120,13 +120,16 @@ test.describe("forms and ministry flows", () => {
     await expect(page.getByRole("link", { name: "Connect With Us" })).toHaveAttribute("href", "#contact");
     await expect(page.getByRole("link", { name: "View Gatherings" })).toHaveAttribute("href", "#events");
 
+    await page.goto("/#events");
+    await expect(page.locator("#events").getByRole("link", { name: "Join" }).first()).toHaveAttribute("href", /zoom|chat\.whatsapp/);
+
     await page.goto("/#event-daily-prayer-meeting");
-    const eventForm = page.getByRole("form", { name: "Daily Prayer Meeting registration form" });
-    await eventForm.getByLabel("Full name").fill("Event Guest");
-    await eventForm.getByLabel("Email").fill("guest@example.com");
-    await eventForm.getByLabel("Phone number").fill("555-0100");
-    await eventForm.getByRole("button", { name: "Register for Event" }).click();
-    await expect(page.getByRole("status")).toContainText("Registration confirmed");
+    await expect(page.getByRole("heading", { level: 1, name: "Daily Prayer Meeting" })).toBeVisible();
+    await expect(page.getByText("Monday - Friday")).toBeVisible();
+    await expect(page.getByText("6:00 AM EST")).toBeVisible();
+    await expect(page.getByText("Online")).toBeVisible();
+    await expect(page.getByText("Join us for daily prayer as we seek God together.")).toBeVisible();
+    await expect(page.getByRole("form", { name: "Daily Prayer Meeting registration form" })).toHaveCount(0);
   });
 
   test("does not expose the removed member portal and protects admin editing", async ({ page }) => {

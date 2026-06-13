@@ -39,10 +39,8 @@ import {
 import { getExternalLinkProps } from "./utils/links";
 import { Hero, Newsletter, Prayer } from "./sections";
 import {
-  getCurrentUser,
   readPlatformState,
   submitContactMessage,
-  submitEventRegistration,
   subscribeToPlatformStore,
   writePlatformState,
 } from "./services/platformStore";
@@ -560,7 +558,7 @@ function EventsPage({ events }) {
                 <div className="mt-6 flex flex-col gap-3">
                   <Button href={`#event-${event.slug}`}>View Details</Button>
                   <a href={event.link} {...getExternalLinkProps(event.link)} className="inline-flex h-[48px] items-center justify-center gap-2 rounded-lg border-2 border-purplePrimary px-5 text-[15px] font-bold text-purplePrimary transition hover:bg-purplePrimary hover:text-white">
-                    Register <ArrowRight size={16} />
+                    Join <ArrowRight size={16} />
                   </a>
                 </div>
               </div>
@@ -572,10 +570,7 @@ function EventsPage({ events }) {
   );
 }
 
-function EventDetailPage({ event, platformState }) {
-  const currentUser = getCurrentUser(platformState);
-  const [status, setStatus] = useState("");
-
+function EventDetailPage({ event }) {
   if (!event) {
     return (
       <section className="section bg-white">
@@ -587,21 +582,6 @@ function EventDetailPage({ event, platformState }) {
     );
   }
 
-  const handleRegistration = (formEvent) => {
-    formEvent.preventDefault();
-    const formData = new FormData(formEvent.currentTarget);
-    submitEventRegistration({
-      eventSlug: event.slug,
-      eventTitle: event.title,
-      capacity: event.capacity,
-      name: formData.get("name"),
-      email: formData.get("email"),
-      phone: formData.get("phone"),
-    });
-    setStatus("Registration confirmed. A confirmation email has been queued.");
-    formEvent.currentTarget.reset();
-  };
-
   return (
     <section className="section bg-white fade-section">
       <div className="container-custom grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
@@ -609,20 +589,12 @@ function EventDetailPage({ event, platformState }) {
         <div>
           <p className="small-label text-purplePrimary">Event Details</p>
           <h2 className="section-title mt-4">{event.title}</h2>
-          <p className="mt-5 text-[18px] leading-8 text-black/65">{event.description}</p>
           <div className="mt-8 grid gap-4 rounded-lg bg-softBg p-6 text-[16px] font-semibold text-darkText">
             <span className="flex items-center gap-3"><Calendar className="text-purplePrimary" /> {event.date}</span>
             <span className="flex items-center gap-3"><Clock className="text-purplePrimary" /> {event.time}</span>
             <span className="flex items-center gap-3"><MapPin className="text-purplePrimary" /> {event.location}</span>
-            {event.password && <span>Password: {event.password}</span>}
+            <span className="text-[16px] font-medium leading-7 text-black/65">{event.description}</span>
           </div>
-          <form className="form-card mt-8" aria-label={`${event.title} registration form`} onSubmit={handleRegistration}>
-            <input className="form-field" name="name" placeholder="Full name" aria-label="Full name" defaultValue={currentUser?.name || ""} required />
-            <input className="form-field" name="email" placeholder="Email" aria-label="Email" type="email" defaultValue={currentUser?.email || ""} required />
-            <input className="form-field" name="phone" placeholder="Phone number" aria-label="Phone number" defaultValue={currentUser?.phone || ""} />
-            <button className="btn btn-primary" type="submit">Register for Event</button>
-            {status && <p className="rounded-lg bg-softBg p-4 text-[15px] font-semibold text-purplePrimary" role="status">{status}</p>}
-          </form>
           <Button href="#events" variant="outline" className="mt-4">Back to Events</Button>
         </div>
       </div>
