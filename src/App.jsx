@@ -339,6 +339,10 @@ function MinistryOverview() {
 function EventHighlight({ events, featuredEventSlug }) {
   const event = events.find((item) => item.slug === featuredEventSlug) || events.find((item) => item.slug !== "daily-prayer-meeting") || events[0];
 
+  if (!event) {
+    return null;
+  }
+
   return (
     <section id="events" className="section bg-softBg fade-section">
       <div className="container-custom grid items-center gap-10 lg:grid-cols-2">
@@ -555,6 +559,11 @@ function EventsPage({ events }) {
     <section id="events" className="section bg-white fade-section">
       <div className="container-custom">
         <SectionHeader eyebrow="Upcoming Events" title="Join us live, online, and in the community." subtitle="Each event includes the essential details visitors need to participate or register." />
+        {events.length === 0 && (
+          <div className="card">
+            <p className="text-[16px] leading-7 text-black/65">No upcoming events are published right now. Please check back soon.</p>
+          </div>
+        )}
         <div className="grid gap-6 md:grid-cols-3">
           {events.map((event) => (
             <article key={event.title} className="card card-hover overflow-hidden p-0">
@@ -730,6 +739,52 @@ function AdminPage({ content }) {
       ...current,
       ministryEvents: current.ministryEvents.map((event, index) => (index === eventIndex ? { ...event, [field]: value } : event)),
     }));
+  };
+
+  const handleAddEvent = () => {
+    setDraftContent((current) => {
+      const slug = `ministry-event-${Date.now()}`;
+      const nextEvent = {
+        capacity: "",
+        cropX: 50,
+        cropY: 18,
+        date: "Upcoming",
+        description: "Add event details here.",
+        image: current.siteImages.hero,
+        link: current.settings.zoom || socialLinks.zoom,
+        location: "Online",
+        password: "",
+        slug,
+        time: "TBD",
+        title: "New Ministry Event",
+      };
+
+      return {
+        ...current,
+        ministryEvents: [...current.ministryEvents, nextEvent],
+        settings: {
+          ...current.settings,
+          featuredEventSlug: current.settings.featuredEventSlug || slug,
+        },
+      };
+    });
+  };
+
+  const handleDeleteEvent = (eventIndex) => {
+    setDraftContent((current) => {
+      const deletedEvent = current.ministryEvents[eventIndex];
+      const ministryEvents = current.ministryEvents.filter((_, index) => index !== eventIndex);
+      const featuredEventSlug = current.settings.featuredEventSlug === deletedEvent?.slug ? ministryEvents[0]?.slug || "" : current.settings.featuredEventSlug;
+
+      return {
+        ...current,
+        ministryEvents,
+        settings: {
+          ...current.settings,
+          featuredEventSlug,
+        },
+      };
+    });
   };
 
   const handleLeadershipChange = (profileIndex, field, value) => {
@@ -949,18 +1004,36 @@ function AdminPage({ content }) {
           </div>
 
           <div className="grid gap-6">
-            <h2 className="text-[30px] font-bold leading-9">Events</h2>
-            <label className="card grid gap-2 text-[14px] font-semibold">
-              Home page event highlight
-              <select className="form-field" value={draftContent.settings.featuredEventSlug} onChange={(event) => handleSettingChange("featuredEventSlug", event.target.value)}>
-                {draftContent.ministryEvents.map((event) => (
-                  <option key={event.slug} value={event.slug}>{event.title}</option>
-                ))}
-              </select>
-            </label>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-[30px] font-bold leading-9">Events</h2>
+                <p className="mt-2 text-[15px] leading-7 text-black/60">Add events, update details, adjust event pictures, or remove events that should no longer show on the site.</p>
+              </div>
+              <button className="btn btn-outline" type="button" onClick={handleAddEvent}>Add Event</button>
+            </div>
+            {draftContent.ministryEvents.length === 0 ? (
+              <div className="card">
+                <p className="text-[16px] leading-7 text-black/65">No events are currently published. Add one when you are ready to invite people to a gathering.</p>
+              </div>
+            ) : (
+              <label className="card grid gap-2 text-[14px] font-semibold">
+                Home page event highlight
+                <select className="form-field" value={draftContent.settings.featuredEventSlug} onChange={(event) => handleSettingChange("featuredEventSlug", event.target.value)}>
+                  {draftContent.ministryEvents.map((event) => (
+                    <option key={event.slug} value={event.slug}>{event.title}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             {draftContent.ministryEvents.map((event, index) => (
               <article key={event.slug} className="card">
-                <h3 className="text-[24px] font-bold leading-8">{event.title}</h3>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h3 className="text-[24px] font-bold leading-8">{event.title}</h3>
+                    <p className="mt-1 text-[14px] font-semibold text-purplePrimary">{event.date} at {event.time}</p>
+                  </div>
+                  <button className="btn btn-outline" type="button" onClick={() => handleDeleteEvent(index)}>Delete</button>
+                </div>
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <AdminField label="Title" value={event.title} onChange={(value) => handleEventChange(index, "title", value)} />
                   <AdminField label="Date" value={event.date} onChange={(value) => handleEventChange(index, "date", value)} />

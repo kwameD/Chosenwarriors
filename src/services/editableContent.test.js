@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { loginAdmin, saveEditableContentToServer } from "./editableContent";
+import { loginAdmin, saveEditableContent, saveEditableContentToServer } from "./editableContent";
 
 describe("editableContent admin persistence", () => {
   afterEach(() => {
@@ -36,5 +36,40 @@ describe("editableContent admin persistence", () => {
       method: "PUT",
     });
     expect(savedBody.content.settings.featuredEventSlug).toBe("revival-night");
+  });
+
+  it("preserves added and deleted events when content is normalized", () => {
+    const normalizedContent = saveEditableContent({
+      ministryEvents: [
+        {
+          date: "July 12, 2026",
+          description: "A new gathering added from the admin page.",
+          image: "/founder-davina-bonsu.jpg",
+          link: "https://example.com/join",
+          location: "Online",
+          slug: "new-gathering",
+          time: "7:00 PM EST",
+          title: "New Gathering",
+        },
+      ],
+      settings: { featuredEventSlug: "revival-night" },
+    });
+
+    expect(normalizedContent.ministryEvents).toHaveLength(1);
+    expect(normalizedContent.ministryEvents[0]).toMatchObject({
+      slug: "new-gathering",
+      title: "New Gathering",
+    });
+    expect(normalizedContent.settings.featuredEventSlug).toBe("new-gathering");
+  });
+
+  it("allows all events to be deleted", () => {
+    const normalizedContent = saveEditableContent({
+      ministryEvents: [],
+      settings: { featuredEventSlug: "revival-night" },
+    });
+
+    expect(normalizedContent.ministryEvents).toEqual([]);
+    expect(normalizedContent.settings.featuredEventSlug).toBe("");
   });
 });

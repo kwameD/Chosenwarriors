@@ -123,6 +123,16 @@ export function subscribeToEditableContent(listener) {
 }
 
 function normalizeEditableContent(content = {}) {
+  const normalizedEvents = normalizeEvents(content.ministryEvents);
+  const settings = {
+    ...defaultEditableContent.settings,
+    ...(content.settings || {}),
+  };
+
+  if (!normalizedEvents.some((event) => event.slug === settings.featuredEventSlug)) {
+    settings.featuredEventSlug = normalizedEvents[0]?.slug || "";
+  }
+
   return {
     siteImages: {
       ...defaultEditableContent.siteImages,
@@ -132,12 +142,7 @@ function normalizeEditableContent(content = {}) {
       hero: normalizeCrop(content.siteImageCrops?.hero, defaultEditableContent.siteImageCrops.hero),
       foundationHero: normalizeCrop(content.siteImageCrops?.foundationHero, defaultEditableContent.siteImageCrops.foundationHero),
     },
-    ministryEvents: defaultEditableContent.ministryEvents.map((event, index) => ({
-      ...event,
-      ...(content.ministryEvents?.[index] || {}),
-      cropX: clampCrop(content.ministryEvents?.[index]?.cropX ?? event.cropX),
-      cropY: clampCrop(content.ministryEvents?.[index]?.cropY ?? event.cropY),
-    })),
+    ministryEvents: normalizedEvents,
     leadershipProfiles: defaultEditableContent.leadershipProfiles.map((profile, index) => ({
       ...profile,
       ...(content.leadershipProfiles?.[index] || {}),
@@ -145,11 +150,34 @@ function normalizeEditableContent(content = {}) {
       cropY: clampCrop(content.leadershipProfiles?.[index]?.cropY ?? profile.cropY),
     })),
     testimonyStories: normalizeTestimonies(content.testimonyStories),
-    settings: {
-      ...defaultEditableContent.settings,
-      ...(content.settings || {}),
-    },
+    settings,
   };
+}
+
+function normalizeEvents(events) {
+  if (!Array.isArray(events)) {
+    return defaultEditableContent.ministryEvents;
+  }
+
+  return events.map((event, index) => {
+    const fallback = defaultEditableContent.ministryEvents[index] || {};
+    const title = String(event.title || fallback.title || `Ministry Event ${index + 1}`).trim();
+
+    return {
+      capacity: Number(event.capacity) || "",
+      cropX: clampCrop(event.cropX ?? fallback.cropX),
+      cropY: clampCrop(event.cropY ?? fallback.cropY),
+      date: String(event.date || fallback.date || "Upcoming").trim(),
+      description: String(event.description || fallback.description || "").trim(),
+      image: String(event.image || fallback.image || siteImages.hero).trim(),
+      link: String(event.link || fallback.link || socialLinks.zoom).trim(),
+      location: String(event.location || fallback.location || "Online").trim(),
+      password: String(event.password || fallback.password || "").trim(),
+      slug: createSlug(event.slug || title, index),
+      time: String(event.time || fallback.time || "TBD").trim(),
+      title,
+    };
+  });
 }
 
 function normalizeTestimonies(testimonies) {
@@ -178,6 +206,15 @@ function normalizeCrop(crop = {}, fallback = { cropX: 50, cropY: 18 }) {
 function clampCrop(value) {
   const numberValue = Number(value);
   return Number.isFinite(numberValue) ? Math.min(Math.max(numberValue, 0), 100) : 50;
+}
+
+function createSlug(value, index) {
+  const slug = String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return slug || `ministry-event-${index + 1}`;
 }
 
 async function request(endpoint, options = {}) {
