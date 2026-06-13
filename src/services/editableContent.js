@@ -1,5 +1,5 @@
 import { socialLinks } from "../config/siteConfig";
-import { leadershipProfiles, ministryEvents, siteImages } from "../content/siteContent";
+import { leadershipProfiles, ministryEvents, siteImages, testimonyStories } from "../content/siteContent";
 
 const CONTENT_KEY = "cw_editable_content";
 const CONTENT_EVENT = "cw:content-updated";
@@ -18,6 +18,11 @@ export const defaultEditableContent = {
   })),
   leadershipProfiles: leadershipProfiles.map((profile) => ({
     ...profile,
+    cropX: 50,
+    cropY: 18,
+  })),
+  testimonyStories: testimonyStories.map((testimony) => ({
+    ...testimony,
     cropX: 50,
     cropY: 18,
   })),
@@ -139,11 +144,28 @@ function normalizeEditableContent(content = {}) {
       cropX: clampCrop(content.leadershipProfiles?.[index]?.cropX ?? profile.cropX),
       cropY: clampCrop(content.leadershipProfiles?.[index]?.cropY ?? profile.cropY),
     })),
+    testimonyStories: normalizeTestimonies(content.testimonyStories),
     settings: {
       ...defaultEditableContent.settings,
       ...(content.settings || {}),
     },
   };
+}
+
+function normalizeTestimonies(testimonies) {
+  if (!Array.isArray(testimonies)) {
+    return defaultEditableContent.testimonyStories;
+  }
+
+  return testimonies.map((testimony, index) => ({
+    date: String(testimony.date || "").trim(),
+    headline: String(testimony.headline || `Member testimony ${index + 1}`).trim(),
+    image: String(testimony.image || siteImages.hero).trim(),
+    name: String(testimony.name || "Community Member").trim(),
+    text: String(testimony.text || "").trim(),
+    cropX: clampCrop(testimony.cropX),
+    cropY: clampCrop(testimony.cropY),
+  }));
 }
 
 function normalizeCrop(crop = {}, fallback = { cropX: 50, cropY: 18 }) {

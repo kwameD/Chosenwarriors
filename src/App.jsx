@@ -178,7 +178,7 @@ function HomePage({ content }) {
       <Hero siteImageCrops={content.siteImageCrops} siteImages={content.siteImages} />
       <MinistryOverview />
       <EventHighlight events={content.ministryEvents} featuredEventSlug={content.settings.featuredEventSlug} />
-      <TestimonialPreview />
+      <TestimonialPreview testimonies={content.testimonyStories} />
       <PartnerCta />
       <Newsletter />
     </>
@@ -247,7 +247,7 @@ function InteriorPage({ content, platformState, route }) {
   if (route === "testimonials") {
     return (
       <PageShell eyebrow="Testimonials" title="Stories of God’s faithfulness.">
-        <TestimonialsPage />
+        <TestimonialsPage testimonies={content.testimonyStories} />
       </PageShell>
     );
   }
@@ -360,8 +360,12 @@ function EventHighlight({ events, featuredEventSlug }) {
   );
 }
 
-function TestimonialPreview() {
-  const testimony = testimonyStories[0];
+function TestimonialPreview({ testimonies = testimonyStories }) {
+  const testimony = testimonies[0];
+
+  if (!testimony) {
+    return null;
+  }
 
   return (
     <section id="testimonials" className="section bg-softBg fade-section">
@@ -610,18 +614,32 @@ function EventDetailPage({ event }) {
   );
 }
 
-function TestimonialsPage() {
+function TestimonialsPage({ testimonies = testimonyStories }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const activeTestimony = testimonyStories[activeIndex];
-  const goToPrevious = () => setActiveIndex((current) => (current === 0 ? testimonyStories.length - 1 : current - 1));
-  const goToNext = () => setActiveIndex((current) => (current + 1) % testimonyStories.length);
+  const activeTestimony = testimonies[activeIndex] || testimonies[0];
+  const goToPrevious = () => setActiveIndex((current) => (current === 0 ? testimonies.length - 1 : current - 1));
+  const goToNext = () => setActiveIndex((current) => (current + 1) % testimonies.length);
+
+  useEffect(() => {
+    setActiveIndex((current) => (current >= testimonies.length ? 0 : current));
+  }, [testimonies.length]);
+
+  if (!activeTestimony) {
+    return (
+      <section id="testimonials" className="section bg-softBg fade-section">
+        <div className="container-custom">
+          <SectionHeader eyebrow="Testimonials" title="Stories that build trust and faith." subtitle="New member testimonies will appear here soon." />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="testimonials" className="section bg-softBg fade-section">
       <div className="container-custom">
         <SectionHeader eyebrow="Testimonials" title="Stories that build trust and faith." subtitle="Structured testimonies help visitors understand the human impact of prayer, teaching, and community." />
         <div className="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <OptimizedImage src={activeTestimony.image} alt={activeTestimony.name} className="portrait-safe h-[520px] w-full rounded-lg object-cover shadow-soft" width="560" height="520" />
+          <OptimizedImage src={activeTestimony.image} alt={activeTestimony.name} className="h-[520px] w-full rounded-lg object-cover shadow-soft" style={getCropStyle(activeTestimony)} width="560" height="520" />
           <article className="card">
             <Quote className="h-12 w-12 text-purplePrimary" />
             <p className="mt-6 text-[13px] font-bold uppercase tracking-widest text-purplePrimary">{activeTestimony.date}</p>
@@ -639,7 +657,7 @@ function TestimonialsPage() {
           </article>
         </div>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
-          {testimonyStories.map((testimony, index) => (
+          {testimonies.map((testimony, index) => (
             <button
               key={testimony.name}
               type="button"
@@ -718,6 +736,38 @@ function AdminPage({ content }) {
     setDraftContent((current) => ({
       ...current,
       leadershipProfiles: current.leadershipProfiles.map((profile, index) => (index === profileIndex ? { ...profile, [field]: value } : profile)),
+    }));
+  };
+
+  const handleTestimonyChange = (testimonyIndex, field, value) => {
+    setDraftContent((current) => ({
+      ...current,
+      testimonyStories: current.testimonyStories.map((testimony, index) => (index === testimonyIndex ? { ...testimony, [field]: value } : testimony)),
+    }));
+  };
+
+  const handleAddTestimony = () => {
+    setDraftContent((current) => ({
+      ...current,
+      testimonyStories: [
+        ...current.testimonyStories,
+        {
+          cropX: 50,
+          cropY: 18,
+          date: new Date().getFullYear().toString(),
+          headline: "New testimony",
+          image: current.siteImages.hero,
+          name: "Community Member",
+          text: "Share how God has moved through this ministry.",
+        },
+      ],
+    }));
+  };
+
+  const handleDeleteTestimony = (testimonyIndex) => {
+    setDraftContent((current) => ({
+      ...current,
+      testimonyStories: current.testimonyStories.filter((_, index) => index !== testimonyIndex),
     }));
   };
 
@@ -844,6 +894,53 @@ function AdminPage({ content }) {
                     <label className="grid gap-2 text-[14px] font-semibold">
                       Bio
                       <textarea className="form-field h-[140px] resize-none py-4" value={profile.bio} onChange={(event) => handleLeadershipChange(index, "bio", event.target.value)} />
+                    </label>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="grid gap-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-[30px] font-bold leading-9">Testimonials</h2>
+                <p className="mt-2 text-[15px] leading-7 text-black/60">Add member testimonies, adjust their pictures, or remove stories that should no longer show on the site.</p>
+              </div>
+              <button className="btn btn-outline" type="button" onClick={handleAddTestimony}>Add Testimony</button>
+            </div>
+            {draftContent.testimonyStories.length === 0 && (
+              <div className="card">
+                <p className="text-[16px] leading-7 text-black/65">No testimonies are currently published. Add one when you are ready to share a member story.</p>
+              </div>
+            )}
+            {draftContent.testimonyStories.map((testimony, index) => (
+              <article key={`${testimony.name}-${index}`} className="card">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h3 className="text-[24px] font-bold leading-8">{testimony.headline || "Member testimony"}</h3>
+                    <p className="mt-1 text-[14px] font-semibold text-purplePrimary">{testimony.name}</p>
+                  </div>
+                  <button className="btn btn-outline" type="button" onClick={() => handleDeleteTestimony(index)}>Delete</button>
+                </div>
+                <div className="mt-5 grid gap-5 md:grid-cols-[0.8fr_1.2fr]">
+                  <AdminImageUpload
+                    cropX={testimony.cropX}
+                    cropY={testimony.cropY}
+                    id={`testimony-image-${index}`}
+                    imageUrl={testimony.image}
+                    isUploading={uploadingImageId === `testimony-image-${index}`}
+                    label={`${testimony.name || "Member"} image`}
+                    onCropChange={(field, value) => handleTestimonyChange(index, field, value)}
+                    onUpload={(file) => handleImageUpload(`testimony-image-${index}`, file, (imageUrl) => handleTestimonyChange(index, "image", imageUrl))}
+                  />
+                  <div className="grid gap-4">
+                    <AdminField label="Member name" value={testimony.name} onChange={(value) => handleTestimonyChange(index, "name", value)} />
+                    <AdminField label="Headline" value={testimony.headline} onChange={(value) => handleTestimonyChange(index, "headline", value)} />
+                    <AdminField label="Date" value={testimony.date} onChange={(value) => handleTestimonyChange(index, "date", value)} />
+                    <label className="grid gap-2 text-[14px] font-semibold">
+                      Testimony
+                      <textarea className="form-field h-[150px] resize-none py-4" value={testimony.text} onChange={(event) => handleTestimonyChange(index, "text", event.target.value)} />
                     </label>
                   </div>
                 </div>

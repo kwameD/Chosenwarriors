@@ -118,6 +118,7 @@ function normalizeEditableContent(content = {}) {
   const siteImageCrops = content.siteImageCrops && typeof content.siteImageCrops === "object" ? content.siteImageCrops : {};
   const ministryEvents = Array.isArray(content.ministryEvents) ? content.ministryEvents : [];
   const leadershipProfiles = Array.isArray(content.leadershipProfiles) ? content.leadershipProfiles : [];
+  const testimonyStories = Array.isArray(content.testimonyStories) ? content.testimonyStories : [];
   const settings = content.settings && typeof content.settings === "object" ? content.settings : {};
 
   return {
@@ -150,6 +151,16 @@ function normalizeEditableContent(content = {}) {
       intro: String(profile.intro || "").trim(),
       name: String(profile.name || "").trim(),
       role: String(profile.role || "").trim(),
+    })),
+    testimonyStories: testimonyStories.map((testimony) => ({
+      ...testimony,
+      cropX: clampCrop(testimony.cropX),
+      cropY: clampCrop(testimony.cropY),
+      date: String(testimony.date || "").trim(),
+      headline: String(testimony.headline || "").trim(),
+      image: String(testimony.image || "").trim(),
+      name: String(testimony.name || "").trim(),
+      text: String(testimony.text || "").trim(),
     })),
     settings,
   };
