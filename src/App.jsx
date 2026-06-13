@@ -175,7 +175,7 @@ export default function App() {
 function HomePage({ content }) {
   return (
     <>
-      <Hero siteImages={content.siteImages} />
+      <Hero siteImageCrops={content.siteImageCrops} siteImages={content.siteImages} />
       <MinistryOverview />
       <EventHighlight events={content.ministryEvents} featuredEventSlug={content.settings.featuredEventSlug} />
       <TestimonialPreview />
@@ -183,6 +183,10 @@ function HomePage({ content }) {
       <Newsletter />
     </>
   );
+}
+
+function getCropStyle({ cropX = 50, cropY = 18 } = {}) {
+  return { objectPosition: `${cropX}% ${cropY}%` };
 }
 
 function mergeById(primary = [], secondary = []) {
@@ -201,9 +205,9 @@ function InteriorPage({ content, platformState, route }) {
   if (route === "about") {
     return (
       <PageShell eyebrow="About Chosen Warriors" title="A ministry built for prayer, discipleship, and transformation.">
-        <AboutOverview siteImages={content.siteImages} />
+        <AboutOverview siteImageCrops={content.siteImageCrops} siteImages={content.siteImages} />
         <MissionVisionContent />
-        <FoundationPage siteImages={content.siteImages} compact />
+        <FoundationPage siteImageCrops={content.siteImageCrops} siteImages={content.siteImages} compact />
       </PageShell>
     );
   }
@@ -259,7 +263,7 @@ function InteriorPage({ content, platformState, route }) {
   if (route === "foundation") {
     return (
       <PageShell eyebrow="Foundation" title="Chosen to Rescue: compassion made visible.">
-        <FoundationPage siteImages={content.siteImages} />
+        <FoundationPage siteImageCrops={content.siteImageCrops} siteImages={content.siteImages} />
       </PageShell>
     );
   }
@@ -338,7 +342,7 @@ function EventHighlight({ events, featuredEventSlug }) {
   return (
     <section id="events" className="section bg-softBg fade-section">
       <div className="container-custom grid items-center gap-10 lg:grid-cols-2">
-        <OptimizedImage src={event.image} alt={event.title} className="portrait-safe h-[420px] w-full rounded-lg object-cover shadow-soft" width="640" height="420" />
+        <OptimizedImage src={event.image} alt={event.title} className="h-[420px] w-full rounded-lg object-cover shadow-soft" style={getCropStyle(event)} width="640" height="420" />
         <div>
           <p className="small-label text-purplePrimary">Event Highlight</p>
           <h2 className="section-title mt-4">{event.title}</h2>
@@ -445,11 +449,13 @@ function MissionVisionContent() {
   );
 }
 
-function AboutOverview({ siteImages: editableSiteImages = siteImages }) {
+function AboutOverview({ siteImageCrops = {}, siteImages: editableSiteImages = siteImages }) {
+  const heroCrop = siteImageCrops.hero || { cropX: 50, cropY: 18 };
+
   return (
     <section id="about" className="section bg-white fade-section">
       <div className="container-custom grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-        <OptimizedImage src={editableSiteImages.hero} alt="Chosen Warriors ministry leadership" className="portrait-safe h-[520px] w-full rounded-lg object-cover shadow-soft" width="600" height="520" />
+        <OptimizedImage src={editableSiteImages.hero} alt="Chosen Warriors ministry leadership" className="h-[520px] w-full rounded-lg object-cover shadow-soft" style={getCropStyle(heroCrop)} width="600" height="520" />
         <div>
           <p className="small-label text-purplePrimary">About the Ministry</p>
           <h2 className="section-title mt-4">A movement helping people encounter Jesus and walk in purpose.</h2>
@@ -476,14 +482,14 @@ function LeadershipPage({ leadershipProfiles: editableLeadershipProfiles = leade
       <div className="container-custom">
         <SectionHeader eyebrow="Meet the Leadership" title="Servant leadership with a clear ministry burden." subtitle="Learn who is stewarding the work, the foundation, and the community experience." />
         <div className="grid gap-8 md:grid-cols-2">
-          {leadershipProfiles.map((member) => (
+          {editableLeadershipProfiles.map((member) => (
             <article key={member.name} className="card card-hover overflow-hidden p-0">
               <div className="overflow-hidden">
                 <OptimizedImage
                   src={member.image}
                   alt={member.name}
                   className="h-[340px] w-full object-cover transition duration-300 hover:scale-105"
-                  style={{ objectPosition: `${member.cropX ?? 50}% ${member.cropY ?? 18}%` }}
+                  style={getCropStyle(member)}
                   width="560"
                   height="340"
                 />
@@ -502,7 +508,9 @@ function LeadershipPage({ leadershipProfiles: editableLeadershipProfiles = leade
   );
 }
 
-function FoundationPage({ compact = false, siteImages: editableSiteImages = siteImages }) {
+function FoundationPage({ compact = false, siteImageCrops = {}, siteImages: editableSiteImages = siteImages }) {
+  const foundationCrop = siteImageCrops.foundationHero || { cropX: 50, cropY: 18 };
+
   return (
     <section id="foundation" className="section bg-softBg fade-section">
       <div className="container-custom">
@@ -512,7 +520,7 @@ function FoundationPage({ compact = false, siteImages: editableSiteImages = site
           subtitle="The foundation expression of the ministry focuses on outreach, mentorship, evangelism, and restoring dignity through compassionate action."
         />
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <OptimizedImage src={siteImages.foundationHero} alt="Chosen to Rescue outreach" className="portrait-safe h-[460px] w-full rounded-lg object-cover shadow-soft" width="600" height="460" />
+          <OptimizedImage src={editableSiteImages.foundationHero} alt="Chosen to Rescue outreach" className="h-[460px] w-full rounded-lg object-cover shadow-soft" style={getCropStyle(foundationCrop)} width="600" height="460" />
           <div className="grid gap-5">
             {ministryTimeline.map((item) => (
               <article key={item.title} className="card card-hover">
@@ -546,7 +554,7 @@ function EventsPage({ events }) {
         <div className="grid gap-6 md:grid-cols-3">
           {events.map((event) => (
             <article key={event.title} className="card card-hover overflow-hidden p-0">
-              <OptimizedImage src={event.image} alt={event.title} className="portrait-safe h-[220px] w-full object-cover" width="420" height="220" />
+              <OptimizedImage src={event.image} alt={event.title} className="h-[220px] w-full object-cover" style={getCropStyle(event)} width="420" height="220" />
               <div className="p-6">
                 <h2 className="text-[24px] font-bold leading-8">{event.title}</h2>
                 <div className="mt-4 grid gap-2 text-[14px] font-semibold text-black/65">
@@ -585,7 +593,7 @@ function EventDetailPage({ event }) {
   return (
     <section className="section bg-white fade-section">
       <div className="container-custom grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-        <OptimizedImage src={event.image} alt={event.title} className="portrait-safe h-[520px] w-full rounded-lg object-cover shadow-soft" width="620" height="520" />
+        <OptimizedImage src={event.image} alt={event.title} className="h-[520px] w-full rounded-lg object-cover shadow-soft" style={getCropStyle(event)} width="620" height="520" />
         <div>
           <p className="small-label text-purplePrimary">Event Details</p>
           <h2 className="section-title mt-4">{event.title}</h2>
@@ -686,6 +694,19 @@ function AdminPage({ content }) {
     }));
   };
 
+  const handleSiteImageCropChange = (imageKey, field, value) => {
+    setDraftContent((current) => ({
+      ...current,
+      siteImageCrops: {
+        ...current.siteImageCrops,
+        [imageKey]: {
+          ...current.siteImageCrops[imageKey],
+          [field]: value,
+        },
+      },
+    }));
+  };
+
   const handleEventChange = (eventIndex, field, value) => {
     setDraftContent((current) => ({
       ...current,
@@ -775,17 +796,23 @@ function AdminPage({ content }) {
             <p className="mt-2 text-[15px] leading-7 text-black/60">Upload pictures from your desktop or mobile device, preview them here, then save updates to publish them.</p>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <AdminImageUpload
+                cropX={draftContent.siteImageCrops.hero.cropX}
+                cropY={draftContent.siteImageCrops.hero.cropY}
                 id="site-hero-image"
                 imageUrl={draftContent.siteImages.hero}
                 isUploading={uploadingImageId === "site-hero-image"}
                 label="Home and about image"
+                onCropChange={(field, value) => handleSiteImageCropChange("hero", field, value)}
                 onUpload={(file) => handleImageUpload("site-hero-image", file, (imageUrl) => handleImageChange("hero", imageUrl))}
               />
               <AdminImageUpload
+                cropX={draftContent.siteImageCrops.foundationHero.cropX}
+                cropY={draftContent.siteImageCrops.foundationHero.cropY}
                 id="foundation-image"
                 imageUrl={draftContent.siteImages.foundationHero}
                 isUploading={uploadingImageId === "foundation-image"}
                 label="Foundation image"
+                onCropChange={(field, value) => handleSiteImageCropChange("foundationHero", field, value)}
                 onUpload={(file) => handleImageUpload("foundation-image", file, (imageUrl) => handleImageChange("foundationHero", imageUrl))}
               />
             </div>
@@ -843,10 +870,13 @@ function AdminPage({ content }) {
                   <AdminField label="Time" value={event.time} onChange={(value) => handleEventChange(index, "time", value)} />
                   <AdminField label="Location" value={event.location} onChange={(value) => handleEventChange(index, "location", value)} />
                   <AdminImageUpload
+                    cropX={event.cropX}
+                    cropY={event.cropY}
                     id={`event-image-${event.slug}`}
                     imageUrl={event.image}
                     isUploading={uploadingImageId === `event-image-${event.slug}`}
                     label="Event image"
+                    onCropChange={(field, value) => handleEventChange(index, field, value)}
                     onUpload={(file) => handleImageUpload(`event-image-${event.slug}`, file, (imageUrl) => handleEventChange(index, "image", imageUrl))}
                   />
                   <AdminField label="Registration link" value={event.link || ""} onChange={(value) => handleEventChange(index, "link", value)} />

@@ -7,7 +7,15 @@ const ADMIN_TOKEN_KEY = "cw_admin_token";
 
 export const defaultEditableContent = {
   siteImages,
-  ministryEvents,
+  siteImageCrops: {
+    hero: { cropX: 50, cropY: 18 },
+    foundationHero: { cropX: 50, cropY: 18 },
+  },
+  ministryEvents: ministryEvents.map((event) => ({
+    ...event,
+    cropX: 50,
+    cropY: 18,
+  })),
   leadershipProfiles: leadershipProfiles.map((profile) => ({
     ...profile,
     cropX: 50,
@@ -115,9 +123,15 @@ function normalizeEditableContent(content = {}) {
       ...defaultEditableContent.siteImages,
       ...(content.siteImages || {}),
     },
+    siteImageCrops: {
+      hero: normalizeCrop(content.siteImageCrops?.hero, defaultEditableContent.siteImageCrops.hero),
+      foundationHero: normalizeCrop(content.siteImageCrops?.foundationHero, defaultEditableContent.siteImageCrops.foundationHero),
+    },
     ministryEvents: defaultEditableContent.ministryEvents.map((event, index) => ({
       ...event,
       ...(content.ministryEvents?.[index] || {}),
+      cropX: clampCrop(content.ministryEvents?.[index]?.cropX ?? event.cropX),
+      cropY: clampCrop(content.ministryEvents?.[index]?.cropY ?? event.cropY),
     })),
     leadershipProfiles: defaultEditableContent.leadershipProfiles.map((profile, index) => ({
       ...profile,
@@ -129,6 +143,13 @@ function normalizeEditableContent(content = {}) {
       ...defaultEditableContent.settings,
       ...(content.settings || {}),
     },
+  };
+}
+
+function normalizeCrop(crop = {}, fallback = { cropX: 50, cropY: 18 }) {
+  return {
+    cropX: clampCrop(crop.cropX ?? fallback.cropX),
+    cropY: clampCrop(crop.cropY ?? fallback.cropY),
   };
 }
 

@@ -1,16 +1,19 @@
 import { Button } from "../components/ui/Button";
 import { OptimizedImage } from "../components/ui/OptimizedImage";
 
-export function Hero({ siteImages }) {
+export function Hero({ siteImageCrops = {}, siteImages }) {
+  const heroCrop = siteImageCrops.hero || { cropX: 50, cropY: 18 };
+
   return (
     <section id="home" className="relative min-h-[620px] overflow-hidden bg-darkText md:min-h-[700px]">
       <OptimizedImage
         src={siteImages.hero}
         alt=""
-        className="hero-media portrait-safe absolute inset-0 h-full w-full object-cover"
+        className="hero-media absolute inset-0 h-full w-full object-cover"
         fetchPriority="high"
         height="720"
         loading="eager"
+        style={{ objectPosition: `${heroCrop.cropX}% ${heroCrop.cropY}%` }}
         width="1800"
       />
       <div className="absolute inset-0 bg-gradient-to-br from-deepPurple/82 via-deepPurple/58 to-purplePrimary/42" />

@@ -115,15 +115,22 @@ export async function handler(event) {
 
 function normalizeEditableContent(content = {}) {
   const siteImages = content.siteImages && typeof content.siteImages === "object" ? content.siteImages : {};
+  const siteImageCrops = content.siteImageCrops && typeof content.siteImageCrops === "object" ? content.siteImageCrops : {};
   const ministryEvents = Array.isArray(content.ministryEvents) ? content.ministryEvents : [];
   const leadershipProfiles = Array.isArray(content.leadershipProfiles) ? content.leadershipProfiles : [];
   const settings = content.settings && typeof content.settings === "object" ? content.settings : {};
 
   return {
     siteImages,
+    siteImageCrops: {
+      hero: normalizeCrop(siteImageCrops.hero),
+      foundationHero: normalizeCrop(siteImageCrops.foundationHero),
+    },
     ministryEvents: ministryEvents.map((event) => ({
       ...event,
       capacity: Number(event.capacity) || "",
+      cropX: clampCrop(event.cropX),
+      cropY: clampCrop(event.cropY),
       date: String(event.date || "").trim(),
       description: String(event.description || "").trim(),
       image: String(event.image || "").trim(),
@@ -145,6 +152,13 @@ function normalizeEditableContent(content = {}) {
       role: String(profile.role || "").trim(),
     })),
     settings,
+  };
+}
+
+function normalizeCrop(crop = {}) {
+  return {
+    cropX: clampCrop(crop.cropX),
+    cropY: clampCrop(crop.cropY),
   };
 }
 
